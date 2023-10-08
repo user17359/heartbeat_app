@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">heartbeat_app</string>
+    <string name="heart_icon_content_desc">Heart icon</string>
 </resources>
