@@ -30,7 +30,7 @@ fun HeartbeatApp(
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(navController = navController, startDestination = HeartbeatScreen.GatewaySelection.name) {
-        composable(HeartbeatScreen.GatewaySelection.name) { GatewaySelectionScreen() }
+        composable(HeartbeatScreen.GatewaySelection.name) { GatewaySelectionScreen(navController) }
         composable(HeartbeatScreen.GatewayLoading.name) { GatewayLoadingScreen() }
         composable(HeartbeatScreen.GatewayMenu.name) { GatewayMenuScreen() }
         composable(HeartbeatScreen.SensorSelection.name) { SensorSelectionScreen() }

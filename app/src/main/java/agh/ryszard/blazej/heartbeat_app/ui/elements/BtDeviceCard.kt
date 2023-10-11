@@ -2,6 +2,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.elements
 
 import agh.ryszard.blazej.heartbeat_app.R
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,12 +21,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun BtDeviceCard(icon: ImageVector, name: String, macAddress: String){
+fun BtDeviceCard(icon: ImageVector, name: String, macAddress: String, onClick: () -> Unit){
     OutlinedCard (
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier
+            .clickable { onClick() }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
