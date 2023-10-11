@@ -8,6 +8,7 @@ import agh.ryszard.blazej.heartbeat_app.ui.screens.NewMeasurementScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorLoadingScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorMenuScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorSelectionScreen
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,6 +27,7 @@ enum class HeartbeatScreen {
 }
 
 @Composable
+@ExperimentalMaterial3Api
 fun HeartbeatApp(
     navController: NavHostController = rememberNavController()
 ) {
@@ -35,8 +37,8 @@ fun HeartbeatApp(
         composable(HeartbeatScreen.GatewayMenu.name) { GatewayMenuScreen(navController) }
         composable(HeartbeatScreen.SensorSelection.name) { SensorSelectionScreen(navController) }
         composable(HeartbeatScreen.SensorLoading.name) { SensorLoadingScreen(navController) }
-        composable(HeartbeatScreen.SensorMenu.name) { SensorMenuScreen() }
-        composable(HeartbeatScreen.DiaryEntry.name) { DiaryEntryScreen() }
+        composable(HeartbeatScreen.SensorMenu.name) { SensorMenuScreen(navController) }
+        composable(HeartbeatScreen.DiaryEntry.name) { DiaryEntryScreen(navController) }
         composable(HeartbeatScreen.NewMeasurement.name) { NewMeasurementScreen() }
     }
 }

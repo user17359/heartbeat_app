@@ -1,6 +1,8 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
+import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
+import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimepickerTextField
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountBoxk
+
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,19 +31,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import java.util.concurrent.TimeUnit
 
 @Composable
-@Preview
 @ExperimentalMaterial3Api
-fun DiaryEntryScreen() {
+fun DiaryEntryScreen(navController: NavHostController) {
     var label by remember { mutableStateOf("") }
     val time = rememberTimePickerState(is24Hour = true)
     var description by remember { mutableStateOf("") }
     val showTimePicker = remember { mutableStateOf(false) }
     var isTimeSelected = false
+    val showDialog = remember { mutableStateOf(false) }
 
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
@@ -49,6 +53,14 @@ fun DiaryEntryScreen() {
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            if(showDialog.value) {
+                AlertDialogTemplate(
+                    onDismissRequest = {showDialog.value = false},
+                    onConfirmation = { showDialog.value = false; onCancel(navController) },
+                    dialogTitle = "Are you sure to cancel?",
+                    dialogText = "All data will be lost"
+                )
+            }
             if (showTimePicker.value) {
                 TimePickerDialog(onDismiss =
                 {
@@ -72,8 +84,10 @@ fun DiaryEntryScreen() {
                         text = "Adding event",
                         style = MaterialTheme.typography.titleLarge
                     )
-
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = {
+                        showDialog.value = true
+                    }
+                    ) {
                         Icon(Icons.Rounded.Close, contentDescription = "X sign")
                     }
                 }
@@ -81,7 +95,12 @@ fun DiaryEntryScreen() {
                     value = label,
                     onValueChange = {label = it},
                     label = { Text("Label") },
-                    leadingIcon = @Composable { Icon(Icons.Rounded.AccountBox, contentDescription = "")},
+                    leadingIcon = @Composable {
+                        Icon(
+                            painterResource(R.drawable.label_24px),
+                            contentDescription = "Label"
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                 )
@@ -91,6 +110,12 @@ fun DiaryEntryScreen() {
                         .fillMaxWidth()
                         .padding(top = 8.dp),
                     isTimeSelected = isTimeSelected,
+                    leadingIcon = @Composable {
+                        Icon(
+                            painterResource(R.drawable.schedule_24px),
+                            contentDescription = "Clock"
+                        )
+                    },
                     time = time
                 )
                 OutlinedTextField(
@@ -98,13 +123,14 @@ fun DiaryEntryScreen() {
                     onValueChange = {description = it},
                     label = { Text("Description") },
                     minLines = 8,
+                    maxLines = 20,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp)
                 )
             }
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { onSave(navController) },
                 modifier = Modifier
                     .padding(36.dp, 12.dp, 36.dp, 18.dp)
                     .fillMaxWidth()
@@ -114,4 +140,18 @@ fun DiaryEntryScreen() {
             }
         }
     }
+}
+
+private fun onCancel(navController: NavHostController) {
+    navController.navigate(HeartbeatScreen.GatewayMenu.name)
+}
+
+private fun onSave(navController: NavHostController) {
+    try {
+        // sleep for animation time
+        TimeUnit.MILLISECONDS.sleep(250)
+    } catch (e: InterruptedException) {
+        e.printStackTrace()
+    }
+    navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }

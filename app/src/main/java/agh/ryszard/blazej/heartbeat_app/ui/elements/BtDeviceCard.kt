@@ -16,9 +16,56 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+
+@Composable
+fun BtDeviceCard(icon: Painter, name: String, macAddress: String, onClick: () -> Unit){
+    OutlinedCard (
+        colors = CardDefaults.cardColors(
+            containerColor = if(macAddress != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier
+            .clickable { onClick() }
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        ) {
+            Icon(
+                icon,
+                contentDescription = stringResource(R.string.heart_icon_content_desc),
+                modifier = Modifier
+                    .requiredSize(32.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .padding(start = 12.dp)
+            )
+            {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .padding(bottom = 2.dp),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if(macAddress != "") {
+                    Text(
+                        text = "MAC: $macAddress",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun BtDeviceCard(icon: ImageVector, name: String, macAddress: String, onClick: () -> Unit){

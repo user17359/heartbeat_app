@@ -3,6 +3,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
 import agh.ryszard.blazej.heartbeat_app.mockData.loadConncectedSensors
+import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -26,8 +26,11 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,15 +45,22 @@ fun PreviewGatewayMenu(){
 }
 
 @Composable
-fun GatewayMenuScreen(
-    navController: NavHostController
-) {
+fun GatewayMenuScreen(navController: NavHostController) {
+    val showDialog = remember { mutableStateOf(false) }
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            if(showDialog.value) {
+                AlertDialogTemplate(
+                    onDismissRequest = {showDialog.value = false},
+                    onConfirmation = { showDialog.value = false; onDisconnect(navController) },
+                    dialogTitle = "Are you sure to disconnect?",
+                    dialogText = "lorem ipsum sit dolar amet"
+                )
+            }
             Column(
                 modifier = Modifier
                     .padding(36.dp, 18.dp, 36.dp, 12.dp)
@@ -67,7 +77,11 @@ fun GatewayMenuScreen(
                         style = MaterialTheme.typography.headlineMedium
                     )
 
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(
+                        onClick = {
+                            showDialog.value = true
+                        }
+                    ) {
                         Icon(Icons.Rounded.Close, contentDescription = "X mark")
                     }
                 }
@@ -80,7 +94,7 @@ fun GatewayMenuScreen(
                 )
                 loadConncectedSensors().forEach { sensor ->
                     BtDeviceCard(
-                        icon = Icons.Rounded.FavoriteBorder,
+                        icon = painterResource(R.drawable.ecg_heart_24px),
                         name = sensor.name,
                         macAddress = sensor.macAdress,
                         onClick = { onSensorClick(navController) }
@@ -113,6 +127,9 @@ fun GatewayMenuScreen(
     }
 }
 
+private fun onDisconnect(navController: NavHostController) {
+    navController.navigate(HeartbeatScreen.SensorSelection.name)
+}
 private fun onSensorClick(navController: NavHostController) {
     try {
         // sleep for animation time

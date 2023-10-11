@@ -33,7 +33,7 @@ fun GatewayLoadingScreen(
 ) {
     LaunchedEffect(navHostController){
         // mocking connecting time
-        delay(3000)
+        delay(1000)
         onLoadingEnd(navHostController)
     }
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->

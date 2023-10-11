@@ -1,5 +1,6 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
+import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import java.util.concurrent.TimeUnit
 
 enum class SensorState{
     Empty,
@@ -31,8 +34,7 @@ enum class SensorState{
 }
 
 @Composable
-@Preview
-fun SensorMenuScreen() {
+fun SensorMenuScreen(navController: NavHostController) {
     var sensorState =  SensorState.Measuring
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
@@ -56,7 +58,7 @@ fun SensorMenuScreen() {
                         style = MaterialTheme.typography.titleLarge
                     )
 
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = { onBack(navController) }) {
                         Icon(Icons.Rounded.ArrowBack, contentDescription = "Back arrow")
                     }
                 }
@@ -93,4 +95,14 @@ fun SensorMenuScreen() {
             }
         }
     }
+}
+
+private fun onBack(navController: NavHostController) {
+    try {
+        // sleep for animation time
+        TimeUnit.MILLISECONDS.sleep(250)
+    } catch (e: InterruptedException) {
+        e.printStackTrace()
+    }
+    navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }
