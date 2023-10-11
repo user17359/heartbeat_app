@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 fun BtDeviceCard(icon: ImageVector, name: String, macAddress: String, onClick: () -> Unit){
     OutlinedCard (
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = if(macAddress != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
@@ -54,11 +54,13 @@ fun BtDeviceCard(icon: ImageVector, name: String, macAddress: String, onClick: (
                         .padding(bottom = 2.dp),
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = "MAC: $macAddress",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if(macAddress != "") {
+                    Text(
+                        text = "MAC: $macAddress",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
