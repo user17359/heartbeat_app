@@ -1,7 +1,6 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
-import agh.ryszard.blazej.heartbeat_app.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,11 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import java.util.concurrent.TimeUnit
 
 enum class SensorState{
     Empty,
@@ -71,13 +67,13 @@ fun SensorMenuScreen(navController: NavHostController) {
                 )
             }
             Button(
-                onClick = { /*TODO*/ },
+                onClick = { onStartMeasurement(navController) },
                 modifier = Modifier
                     .padding(36.dp, 12.dp, 36.dp, 18.dp)
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
             ) {
-                Text(text = stringResource(R.string.add_sensor))
+                Text(text = "Start measurement")
             }
             if(sensorState == SensorState.Empty){
 
@@ -98,11 +94,9 @@ fun SensorMenuScreen(navController: NavHostController) {
 }
 
 private fun onBack(navController: NavHostController) {
-    try {
-        // sleep for animation time
-        TimeUnit.MILLISECONDS.sleep(250)
-    } catch (e: InterruptedException) {
-        e.printStackTrace()
-    }
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
+}
+
+private fun onStartMeasurement(navController: NavHostController) {
+    navController.navigate(HeartbeatScreen.NewMeasurement.name)
 }

@@ -15,7 +15,8 @@ fun TimepickerTextField (onClick: () -> Unit,
                          modifier: Modifier = Modifier,
                          isTimeSelected: Boolean,
                          time: TimePickerState,
-                         leadingIcon: @Composable () -> Unit){
+                         leadingIcon: @Composable () -> Unit,
+                         label: String){
     OutlinedTextField(
         value = if(isTimeSelected)
             time.hour.toString() + ":" + time.minute.toString()
@@ -23,7 +24,7 @@ fun TimepickerTextField (onClick: () -> Unit,
             "",
         enabled = false,
         onValueChange = {},
-        label = { Text("Time") },
+        label = { Text(label) },
         leadingIcon = leadingIcon,
         // workaround to create text field + time picker
         colors = OutlinedTextFieldDefaults.colors(

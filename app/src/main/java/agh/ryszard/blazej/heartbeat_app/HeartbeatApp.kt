@@ -39,6 +39,6 @@ fun HeartbeatApp(
         composable(HeartbeatScreen.SensorLoading.name) { SensorLoadingScreen(navController) }
         composable(HeartbeatScreen.SensorMenu.name) { SensorMenuScreen(navController) }
         composable(HeartbeatScreen.DiaryEntry.name) { DiaryEntryScreen(navController) }
-        composable(HeartbeatScreen.NewMeasurement.name) { NewMeasurementScreen() }
+        composable(HeartbeatScreen.NewMeasurement.name) { NewMeasurementScreen(navController) }
     }
 }

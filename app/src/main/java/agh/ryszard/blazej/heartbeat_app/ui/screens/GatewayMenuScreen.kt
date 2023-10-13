@@ -36,7 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import java.util.concurrent.TimeUnit
 
 @Preview
 @Composable
@@ -131,29 +130,11 @@ private fun onDisconnect(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.SensorSelection.name)
 }
 private fun onSensorClick(navController: NavHostController) {
-    try {
-        // sleep for animation time
-        TimeUnit.MILLISECONDS.sleep(250)
-    } catch (e: InterruptedException) {
-        e.printStackTrace()
-    }
     navController.navigate(HeartbeatScreen.SensorMenu.name)
 }
 private fun onAddEvent(navController: NavHostController) {
-    try {
-        // sleep for animation time
-        TimeUnit.MILLISECONDS.sleep(250)
-    } catch (e: InterruptedException) {
-        e.printStackTrace()
-    }
     navController.navigate(HeartbeatScreen.DiaryEntry.name)
 }
 private fun onAddSensor(navController: NavHostController) {
-    try {
-        // sleep for animation time
-        TimeUnit.MILLISECONDS.sleep(250)
-    } catch (e: InterruptedException) {
-        e.printStackTrace()
-    }
     navController.navigate(HeartbeatScreen.SensorSelection.name)
 }

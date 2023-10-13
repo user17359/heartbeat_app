@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import java.util.concurrent.TimeUnit
 
 @Composable
 fun GatewaySelectionScreen(
@@ -73,11 +72,5 @@ fun GatewaySelectionScreen(
 }
 
 private fun onDeviceClick(navController: NavHostController) {
-    try {
-        // sleep for animation time
-        TimeUnit.MILLISECONDS.sleep(250)
-    } catch (e: InterruptedException) {
-        e.printStackTrace()
-    }
     navController.navigate(HeartbeatScreen.GatewayLoading.name)
 }

@@ -35,7 +35,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import java.util.concurrent.TimeUnit
 
 @Composable
 @ExperimentalMaterial3Api
@@ -116,7 +115,8 @@ fun DiaryEntryScreen(navController: NavHostController) {
                             contentDescription = "Clock"
                         )
                     },
-                    time = time
+                    time = time,
+                    label = "Time"
                 )
                 OutlinedTextField(
                     value = description,
@@ -147,11 +147,5 @@ private fun onCancel(navController: NavHostController) {
 }
 
 private fun onSave(navController: NavHostController) {
-    try {
-        // sleep for animation time
-        TimeUnit.MILLISECONDS.sleep(250)
-    } catch (e: InterruptedException) {
-        e.printStackTrace()
-    }
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }
