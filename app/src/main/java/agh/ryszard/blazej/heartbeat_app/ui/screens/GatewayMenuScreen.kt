@@ -95,7 +95,7 @@ fun GatewayMenuScreen(navController: NavHostController) {
                     BtDeviceCard(
                         icon = painterResource(R.drawable.ecg_heart_24px),
                         name = sensor.name,
-                        macAddress = sensor.macAdress,
+                        macAddress = sensor.macAddress,
                         onClick = { onSensorClick(navController) }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -127,7 +127,7 @@ fun GatewayMenuScreen(navController: NavHostController) {
 }
 
 private fun onDisconnect(navController: NavHostController) {
-    navController.navigate(HeartbeatScreen.SensorSelection.name)
+    navController.navigate(HeartbeatScreen.GatewaySelection.name)
 }
 private fun onSensorClick(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.SensorMenu.name)

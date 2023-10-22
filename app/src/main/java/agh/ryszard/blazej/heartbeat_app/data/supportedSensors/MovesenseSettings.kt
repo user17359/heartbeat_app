@@ -1,9 +1,5 @@
 package agh.ryszard.blazej.heartbeat_app.data.supportedSensors
 
-import agh.ryszard.blazej.heartbeat_app.data.SensorSettings
-import agh.ryszard.blazej.heartbeat_app.data.SensorToggleParameter
-import agh.ryszard.blazej.heartbeat_app.data.SensorUnit
-
 data class MovesenseSettings (
     override val units: List<SensorUnit> = listOf(
         SensorUnit(

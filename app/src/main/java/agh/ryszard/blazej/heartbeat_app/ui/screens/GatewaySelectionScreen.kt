@@ -1,9 +1,12 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
-import agh.ryszard.blazej.heartbeat_app.mockData.loadGateways
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.ui.elements.CornerDecoration
+import android.Manifest
+import android.bluetooth.BluetoothManager
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,61 +16,116 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
+private val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    listOf(
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION)
+} else {
+    listOf()
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun GatewaySelectionScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    scanViewModel: ScanViewModel = viewModel()
 ) {
-    Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            CornerDecoration(
+    val multiplePermissionsState = rememberMultiplePermissionsState(permissions)
+
+    if(multiplePermissionsState.allPermissionsGranted) {
+        val bluetoothManager: BluetoothManager? = getSystemService(LocalContext.current, BluetoothManager::class.java)
+        scanViewModel.scanLeDevice(bluetoothManager!!)
+        val listOfDevices = scanViewModel.listOfDevices.observeAsState()
+
+        Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopStart)
-            )
-            CornerDecoration(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .rotate(180.0f)
-            )
-            Column(
-                modifier = Modifier
-                    .padding(
-                        start = 50.dp,
-                        end = 50.dp,
-                    )
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .padding(innerPadding)
+                    .fillMaxSize()
             ) {
-                Text(
-                    modifier = Modifier.padding(bottom = 20.dp),
-                    text = "Select gateway to connect",
-                    style = MaterialTheme.typography.titleLarge
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
                 )
-                loadGateways().forEach { gateway ->
-                    BtDeviceCard(
-                        icon = Icons.Rounded.FavoriteBorder,
-                        name = gateway.name,
-                        macAddress = gateway.macAdress,
-                        onClick = { onDeviceClick(navController) }
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .rotate(180.0f)
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(
+                            start = 50.dp,
+                            end = 50.dp,
+                        )
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        modifier = Modifier.padding(bottom = 20.dp),
+                        text = "Select gateway to connect",
+                        style = MaterialTheme.typography.titleLarge
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    listOfDevices.value?.forEach { gateway ->
+                        BtDeviceCard(
+                            icon = Icons.Rounded.FavoriteBorder,
+                            name = gateway.name,
+                            macAddress = gateway.macAddress,
+                            onClick = { onDeviceClick(navController) }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
+    }
+    else {
+        Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                )
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .rotate(180.0f)
+                )
+            }
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Button(onClick = { multiplePermissionsState.launchMultiplePermissionRequest() }) {
+                        Text("Request permissions")
+                    }
+                }
+            }
     }
 }
 

@@ -2,7 +2,8 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
-import agh.ryszard.blazej.heartbeat_app.data.SensorSettings
+import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.SensorSettings
+import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.SensorToggleParameter
 import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.MovesenseSettings
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
@@ -75,8 +76,10 @@ fun NewMeasurementScreen(navController: NavHostController) {
     sensorSettings.units.forEach { unit ->
         unitsToggle[unit.name] = false
         unit.paramters.forEach { parameter ->
-            expanded[parameter.uniqueId] = false
-            selectedOptionText[parameter.uniqueId] = parameter.options[0]
+            if(parameter is SensorToggleParameter) {
+                expanded[parameter.uniqueId] = false
+                selectedOptionText[parameter.uniqueId] = parameter.options[0]
+            }
         }
     }
 
@@ -234,35 +237,46 @@ fun NewMeasurementScreen(navController: NavHostController) {
                         )
                     }
                     if(unitsToggle[unit.name]!!){
-                        unit.paramters.forEach{ parameter ->
-                            ExposedDropdownMenuBox(
-                                expanded = expanded[parameter.uniqueId]!!,
-                                onExpandedChange = {expanded[parameter.uniqueId] = !expanded[parameter.uniqueId]!!}
-                            ) {
-                                OutlinedTextField(
-                                    modifier = Modifier
-                                        .menuAnchor()
-                                        .padding(bottom = 12.dp, start = 12.dp),
-                                    readOnly = true,
-                                    value = selectedOptionText[parameter.uniqueId]!!,
-                                    onValueChange = {},
-                                    label = { Text(parameter.name) },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded[parameter.uniqueId]!!) },
-                                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                                )
-                                ExposedDropdownMenu(
+                        unit.paramters.forEach { parameter ->
+                            if (parameter is SensorToggleParameter) {
+                                ExposedDropdownMenuBox(
                                     expanded = expanded[parameter.uniqueId]!!,
-                                    onDismissRequest = { expanded[parameter.uniqueId] = false },
+                                    onExpandedChange = {
+                                        expanded[parameter.uniqueId] =
+                                            !expanded[parameter.uniqueId]!!
+                                    },
+                                    modifier = Modifier
+                                        .padding(bottom = 12.dp, start = 12.dp),
                                 ) {
-                                    parameter.options.forEach { selectionOption ->
-                                        DropdownMenuItem(
-                                            text = { Text(selectionOption) },
-                                            onClick = {
-                                                selectedOptionText[parameter.uniqueId] = selectionOption
-                                                expanded[parameter.uniqueId] = false
-                                            },
-                                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                                        )
+                                    OutlinedTextField(
+                                        modifier = Modifier
+                                            .menuAnchor(),
+                                        readOnly = true,
+                                        value = selectedOptionText[parameter.uniqueId]!!,
+                                        onValueChange = {},
+                                        label = { Text(parameter.name) },
+                                        trailingIcon = {
+                                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                                expanded = expanded[parameter.uniqueId]!!
+                                            )
+                                        },
+                                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = expanded[parameter.uniqueId]!!,
+                                        onDismissRequest = { expanded[parameter.uniqueId] = false },
+                                    ) {
+                                        parameter.options.forEach { selectionOption ->
+                                            DropdownMenuItem(
+                                                text = { Text(selectionOption) },
+                                                onClick = {
+                                                    selectedOptionText[parameter.uniqueId] =
+                                                        selectionOption
+                                                    expanded[parameter.uniqueId] = false
+                                                },
+                                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                            )
+                                        }
                                     }
                                 }
                             }

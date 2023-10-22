@@ -1,4 +1,4 @@
-package agh.ryszard.blazej.heartbeat_app.data
+package agh.ryszard.blazej.heartbeat_app.data.supportedSensors
 
 enum class ParameterType {
     Toggle
@@ -14,12 +14,11 @@ class SensorUnit (
 open class SensorParameter (
     open val name: String,
     val type: ParameterType,
-    open val options: List<String>,
     open val uniqueId: Int
 )
 
 data class SensorToggleParameter (
-    override val options: List<String>,
+    val options: List<String>,
     override val name: String,
     override val uniqueId: Int
-): SensorParameter(name, ParameterType.Toggle, options, uniqueId)
+): SensorParameter(name, ParameterType.Toggle, uniqueId)

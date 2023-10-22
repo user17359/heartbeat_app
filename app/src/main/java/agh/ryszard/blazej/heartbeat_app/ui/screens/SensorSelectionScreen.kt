@@ -61,7 +61,7 @@ fun SensorSelectionScreen(
                     BtDeviceCard(
                         icon = Icons.Rounded.FavoriteBorder,
                         name = gateway.name,
-                        macAddress = gateway.macAdress,
+                        macAddress = gateway.macAddress,
                         onClick = { onDeviceClick(navController) }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
