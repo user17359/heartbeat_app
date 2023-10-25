@@ -5,7 +5,6 @@ import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.ui.elements.CornerDecoration
 import android.Manifest
-import android.bluetooth.BluetoothManager
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,17 +20,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
     listOf(
@@ -50,10 +50,12 @@ fun GatewaySelectionScreen(
     scanViewModel: ScanViewModel = viewModel()
 ) {
     val multiplePermissionsState = rememberMultiplePermissionsState(permissions)
-
     if(multiplePermissionsState.allPermissionsGranted) {
-        val bluetoothManager: BluetoothManager? = getSystemService(LocalContext.current, BluetoothManager::class.java)
-        scanViewModel.scanLeDevice(bluetoothManager!!)
+        LaunchedEffect(Unit) {
+            withContext(Dispatchers.IO) {
+                scanViewModel.scanLeDevice()
+            }
+        }
         val listOfDevices = scanViewModel.listOfDevices.observeAsState()
 
         Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
@@ -89,8 +91,8 @@ fun GatewaySelectionScreen(
                     listOfDevices.value?.forEach { gateway ->
                         BtDeviceCard(
                             icon = Icons.Rounded.FavoriteBorder,
-                            name = gateway.name,
-                            macAddress = gateway.macAddress,
+                            name = gateway.name ?: "null",
+                            macAddress = gateway.address,
                             onClick = { onDeviceClick(navController) }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
