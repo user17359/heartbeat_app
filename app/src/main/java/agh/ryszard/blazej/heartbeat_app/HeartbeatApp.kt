@@ -8,8 +8,10 @@ import agh.ryszard.blazej.heartbeat_app.ui.screens.NewMeasurementScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorLoadingScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorMenuScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorSelectionScreen
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,14 +33,33 @@ enum class HeartbeatScreen {
 fun HeartbeatApp(
     navController: NavHostController = rememberNavController()
 ) {
+
+    val viewModel: ScanViewModel = viewModel()
+
     NavHost(navController = navController, startDestination = HeartbeatScreen.GatewaySelection.name) {
-        composable(HeartbeatScreen.GatewaySelection.name) { GatewaySelectionScreen(navController) }
-        composable(HeartbeatScreen.GatewayLoading.name) { GatewayLoadingScreen(navController) }
-        composable(HeartbeatScreen.GatewayMenu.name) { GatewayMenuScreen(navController) }
-        composable(HeartbeatScreen.SensorSelection.name) { SensorSelectionScreen(navController) }
-        composable(HeartbeatScreen.SensorLoading.name) { SensorLoadingScreen(navController) }
-        composable(HeartbeatScreen.SensorMenu.name) { SensorMenuScreen(navController) }
-        composable(HeartbeatScreen.DiaryEntry.name) { DiaryEntryScreen(navController) }
-        composable(HeartbeatScreen.NewMeasurement.name) { NewMeasurementScreen(navController) }
+        composable(HeartbeatScreen.GatewaySelection.name) {
+            GatewaySelectionScreen(navController, viewModel)
+        }
+        composable(HeartbeatScreen.GatewayLoading.name) { _ ->
+            GatewayLoadingScreen(navController, viewModel)
+        }
+        composable(HeartbeatScreen.GatewayMenu.name) { _ ->
+            GatewayMenuScreen(navController, viewModel)
+        }
+        composable(HeartbeatScreen.SensorSelection.name) {
+            SensorSelectionScreen(navController)
+        }
+        composable(HeartbeatScreen.SensorLoading.name) {
+            SensorLoadingScreen(navController)
+        }
+        composable(HeartbeatScreen.SensorMenu.name) {
+            SensorMenuScreen(navController)
+        }
+        composable(HeartbeatScreen.DiaryEntry.name) {
+            DiaryEntryScreen(navController)
+        }
+        composable(HeartbeatScreen.NewMeasurement.name) {
+            NewMeasurementScreen(navController)
+        }
     }
 }

@@ -5,6 +5,7 @@ import agh.ryszard.blazej.heartbeat_app.R
 import agh.ryszard.blazej.heartbeat_app.mockData.loadConncectedSensors
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,25 +27,31 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-
-@Preview
-@Composable
-fun PreviewGatewayMenu(){
-    GatewayMenuScreen(navController = rememberNavController())
-}
+import com.juul.kable.State
 
 @Composable
-fun GatewayMenuScreen(navController: NavHostController) {
+fun GatewayMenuScreen(
+    navController: NavHostController,
+    scanViewModel: ScanViewModel
+) {
+    val connectionState = scanViewModel.connectionState.observeAsState()
+
+    LaunchedEffect(connectionState.value) {
+        if(connectionState.value is State.Disconnected) {
+            navController.navigate(HeartbeatScreen.GatewaySelection.name)
+        }
+    }
+
     val showDialog = remember { mutableStateOf(false) }
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
@@ -55,7 +62,7 @@ fun GatewayMenuScreen(navController: NavHostController) {
             if(showDialog.value) {
                 AlertDialogTemplate(
                     onDismissRequest = {showDialog.value = false},
-                    onConfirmation = { showDialog.value = false; onDisconnect(navController) },
+                    onConfirmation = {onDisconnect(scanViewModel); showDialog.value = false},
                     dialogTitle = "Are you sure to disconnect?",
                     dialogText = "lorem ipsum sit dolar amet"
                 )
@@ -126,8 +133,8 @@ fun GatewayMenuScreen(navController: NavHostController) {
     }
 }
 
-private fun onDisconnect(navController: NavHostController) {
-    navController.navigate(HeartbeatScreen.GatewaySelection.name)
+private fun onDisconnect(scanViewModel: ScanViewModel) {
+    scanViewModel.disconnectLePeripheral()
 }
 private fun onSensorClick(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.SensorMenu.name)

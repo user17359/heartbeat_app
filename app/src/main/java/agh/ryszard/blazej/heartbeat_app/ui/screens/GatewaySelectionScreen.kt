@@ -26,10 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.juul.kable.AndroidAdvertisement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -47,7 +47,7 @@ private val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 @Composable
 fun GatewaySelectionScreen(
     navController: NavHostController,
-    scanViewModel: ScanViewModel = viewModel()
+    scanViewModel: ScanViewModel
 ) {
     val multiplePermissionsState = rememberMultiplePermissionsState(permissions)
     if(multiplePermissionsState.allPermissionsGranted) {
@@ -93,7 +93,7 @@ fun GatewaySelectionScreen(
                             icon = Icons.Rounded.FavoriteBorder,
                             name = gateway.name ?: "null",
                             macAddress = gateway.address,
-                            onClick = { onDeviceClick(navController) }
+                            onClick = { onDeviceClick(navController, gateway, scanViewModel) }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -131,6 +131,9 @@ fun GatewaySelectionScreen(
     }
 }
 
-private fun onDeviceClick(navController: NavHostController) {
+private fun onDeviceClick(navController: NavHostController,
+                          advertisement: AndroidAdvertisement,
+                          scanViewModel: ScanViewModel) {
+    scanViewModel.connectLePeripheral(advertisement)
     navController.navigate(HeartbeatScreen.GatewayLoading.name)
 }

@@ -3,6 +3,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
 import agh.ryszard.blazej.heartbeat_app.ui.elements.CornerDecoration
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -24,18 +26,22 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.juul.kable.State
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 
 @Composable
 fun GatewayLoadingScreen(
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    scanViewModel: ScanViewModel
 ) {
-    LaunchedEffect(navHostController){
-        // mocking connecting time
-        delay(1000)
-        onLoadingEnd(navHostController)
+    val connectionState = scanViewModel.connectionState.observeAsState()
+
+    LaunchedEffect(connectionState.value) {
+        if(connectionState.value is State.Connected) {
+            onLoadingEnd(navHostController)
+        }
     }
+
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
             modifier = Modifier
