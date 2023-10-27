@@ -47,7 +47,7 @@ fun HeartbeatApp(
             GatewayMenuScreen(navController, viewModel)
         }
         composable(HeartbeatScreen.SensorSelection.name) {
-            SensorSelectionScreen(navController)
+            SensorSelectionScreen(navController, viewModel)
         }
         composable(HeartbeatScreen.SensorLoading.name) {
             SensorLoadingScreen(navController)

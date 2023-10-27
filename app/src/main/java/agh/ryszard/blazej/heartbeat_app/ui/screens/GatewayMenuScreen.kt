@@ -2,7 +2,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
-import agh.ryszard.blazej.heartbeat_app.mockData.loadConncectedSensors
+import agh.ryszard.blazej.heartbeat_app.data.BtDevice
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
@@ -28,9 +28,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -45,10 +47,14 @@ fun GatewayMenuScreen(
     scanViewModel: ScanViewModel
 ) {
     val connectionState = scanViewModel.connectionState.observeAsState()
+    var rememberedSensors by remember { mutableStateOf(listOf<BtDevice>()) }
 
     LaunchedEffect(connectionState.value) {
         if(connectionState.value is State.Disconnected) {
             navController.navigate(HeartbeatScreen.GatewaySelection.name)
+        }
+        else {
+            rememberedSensors = scanViewModel.getSensors()
         }
     }
 
@@ -93,16 +99,16 @@ fun GatewayMenuScreen(
                 }
                 Divider()
                 Text(
-                    text = "Connected sensors",
+                    text = "Remembered sensors",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .padding(top = 12.dp, bottom = 12.dp),
                 )
-                loadConncectedSensors().forEach { sensor ->
+                rememberedSensors.forEach { sensor ->
                     BtDeviceCard(
                         icon = painterResource(R.drawable.ecg_heart_24px),
                         name = sensor.name,
-                        macAddress = sensor.macAddress,
+                        macAddress = sensor.mac,
                         onClick = { onSensorClick(navController) }
                     )
                     Spacer(modifier = Modifier.height(16.dp))

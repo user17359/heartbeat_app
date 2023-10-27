@@ -1,9 +1,10 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
-import agh.ryszard.blazej.heartbeat_app.mockData.loadFoundSensors
+import agh.ryszard.blazej.heartbeat_app.data.BtDevice
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.ui.elements.CornerDecoration
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,16 +18,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
 
 @Composable
 fun SensorSelectionScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    scanViewModel: ScanViewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    var foundSensors by remember { mutableStateOf(listOf<BtDevice>()) }
+
+    LaunchedEffect(Unit) {
+        foundSensors = scanViewModel.findSensors()
+    }
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
             modifier = Modifier
@@ -57,12 +72,16 @@ fun SensorSelectionScreen(
                     text = "Select sensor to connect",
                     style = MaterialTheme.typography.titleLarge
                 )
-                loadFoundSensors().forEach { gateway ->
+                foundSensors.forEach { sensor ->
                     BtDeviceCard(
                         icon = Icons.Rounded.FavoriteBorder,
-                        name = gateway.name,
-                        macAddress = gateway.macAddress,
-                        onClick = { onDeviceClick(navController) }
+                        name = sensor.name,
+                        macAddress = sensor.mac,
+                        onClick = {
+                            coroutineScope.launch {
+                                onDeviceClick(navController, sensor, scanViewModel)
+                            }
+                        }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -71,6 +90,7 @@ fun SensorSelectionScreen(
     }
 }
 
-private fun onDeviceClick(navController: NavHostController) {
+private suspend fun onDeviceClick(navController: NavHostController, btDevice: BtDevice, viewModel: ScanViewModel) {
+    viewModel.addSensor(btDevice)
     navController.navigate(HeartbeatScreen.SensorLoading.name)
 }
