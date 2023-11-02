@@ -59,7 +59,7 @@ fun HeartbeatApp(
             DiaryEntryScreen(navController)
         }
         composable(HeartbeatScreen.NewMeasurement.name) {
-            NewMeasurementScreen(navController)
+            NewMeasurementScreen(navController, viewModel)
         }
     }
 }

@@ -1,6 +1,7 @@
 package agh.ryszard.blazej.heartbeat_app.viewmodel
 
 import agh.ryszard.blazej.heartbeat_app.data.BtDevice
+import agh.ryszard.blazej.heartbeat_app.data.Measurement
 import agh.ryszard.blazej.heartbeat_app.utils.peripheralScope
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -133,6 +134,15 @@ class ScanViewModel: ViewModel() {
             characteristic = "1fe83b02-0788-4af7-9a69-af6b9e9782a7",
         )
         val jsonString = Json.encodeToString(sensor)
+        _peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
+    }
+
+    suspend fun addMeasurement(measurement: Measurement) {
+        val characteristic = characteristicOf(
+            service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
+            characteristic = "18c7e933-73cf-4d47-9973-51a53f0fec4e",
+        )
+        val jsonString = Json.encodeToString(measurement)
         _peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
 }

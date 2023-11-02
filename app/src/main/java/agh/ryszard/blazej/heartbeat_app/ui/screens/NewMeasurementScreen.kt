@@ -2,12 +2,14 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
+import agh.ryszard.blazej.heartbeat_app.data.Measurement
 import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.SensorSettings
 import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.SensorToggleParameter
 import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.MovesenseSettings
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimepickerTextField
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,15 +41,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 
 enum class Timepicker {
     Start,
@@ -56,15 +58,11 @@ enum class Timepicker {
 }
 
 @Composable
-@Preview
 @ExperimentalMaterial3Api
-fun NewMeasurePreview() {
-    NewMeasurementScreen(rememberNavController())
-}
+fun NewMeasurementScreen(navController: NavHostController,
+                         scanViewModel: ScanViewModel) {
 
-@Composable
-@ExperimentalMaterial3Api
-fun NewMeasurementScreen(navController: NavHostController) {
+    val coroutineScope = rememberCoroutineScope()
 
     // settings from current sensor
     val sensorSettings: SensorSettings = MovesenseSettings()
@@ -285,7 +283,19 @@ fun NewMeasurementScreen(navController: NavHostController) {
                 }
             }
             Button(
-                onClick = { onSave(navController) },
+                onClick = {
+                    coroutineScope.launch {
+                        onSave(navController, scanViewModel,
+                            Measurement(
+                                "test",
+                                startTime.hour,
+                                startTime.minute,
+                                endTime.hour,
+                                endTime.minute
+                            )
+                        )
+                    }
+                },
                 modifier = Modifier
                     .padding(36.dp, 12.dp, 36.dp, 18.dp)
                     .fillMaxWidth()
@@ -301,6 +311,12 @@ private fun onCancel(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.SensorMenu.name)
 }
 
-private fun onSave(navController: NavHostController) {
+private suspend fun onSave(navController: NavHostController,
+                           viewModel: ScanViewModel,
+                           measurement: Measurement) {
+    //TODO: check if hours are valid
+    //TODO: handle next day
+    //TODO: pass real sensor MAC adress
+    viewModel.addMeasurement(measurement)
     navController.navigate(HeartbeatScreen.SensorMenu.name)
 }

@@ -80,6 +80,7 @@ fun SensorMenuScreen(navController: NavHostController) {
             }
             else if(sensorState == SensorState.Waiting){
                 Text(
+                    //TODO: get actual data
                     text = "Starting at 14:44",
                     modifier = Modifier
                         .align(Alignment.Center),
