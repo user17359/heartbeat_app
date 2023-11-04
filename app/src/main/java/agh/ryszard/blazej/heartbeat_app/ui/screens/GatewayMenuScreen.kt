@@ -109,7 +109,7 @@ fun GatewayMenuScreen(
                         icon = painterResource(R.drawable.ecg_heart_24px),
                         name = sensor.name,
                         macAddress = sensor.mac,
-                        onClick = { onSensorClick(navController) }
+                        onClick = { onSensorClick(navController, sensor.mac) }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -142,8 +142,8 @@ fun GatewayMenuScreen(
 private fun onDisconnect(scanViewModel: ScanViewModel) {
     scanViewModel.disconnectLePeripheral()
 }
-private fun onSensorClick(navController: NavHostController) {
-    navController.navigate(HeartbeatScreen.SensorMenu.name)
+private fun onSensorClick(navController: NavHostController, mac: String) {
+    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac")
 }
 private fun onAddEvent(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.DiaryEntry.name)

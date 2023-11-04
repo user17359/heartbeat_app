@@ -30,7 +30,7 @@ enum class SensorState{
 }
 
 @Composable
-fun SensorMenuScreen(navController: NavHostController) {
+fun SensorMenuScreen(navController: NavHostController, mac: String) {
     var sensorState =  SensorState.Measuring
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
@@ -67,7 +67,7 @@ fun SensorMenuScreen(navController: NavHostController) {
                 )
             }
             Button(
-                onClick = { onStartMeasurement(navController) },
+                onClick = { onStartMeasurement(navController, mac) },
                 modifier = Modifier
                     .padding(36.dp, 12.dp, 36.dp, 18.dp)
                     .fillMaxWidth()
@@ -98,6 +98,6 @@ private fun onBack(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }
 
-private fun onStartMeasurement(navController: NavHostController) {
-    navController.navigate(HeartbeatScreen.NewMeasurement.name)
+private fun onStartMeasurement(navController: NavHostController, mac: String) {
+    navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac")
 }

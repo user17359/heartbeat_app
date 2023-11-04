@@ -52,14 +52,16 @@ fun HeartbeatApp(
         composable(HeartbeatScreen.SensorLoading.name) {
             SensorLoadingScreen(navController)
         }
-        composable(HeartbeatScreen.SensorMenu.name) {
-            SensorMenuScreen(navController)
+        composable(HeartbeatScreen.SensorMenu.name + "/{mac}") {
+            val mac = it.arguments?.getString("mac")
+            SensorMenuScreen(navController, mac ?: "")
         }
         composable(HeartbeatScreen.DiaryEntry.name) {
             DiaryEntryScreen(navController)
         }
-        composable(HeartbeatScreen.NewMeasurement.name) {
-            NewMeasurementScreen(navController, viewModel)
+        composable(HeartbeatScreen.NewMeasurement.name + "/{mac}") {
+            val mac = it.arguments?.getString("mac")
+            NewMeasurementScreen(navController, viewModel, mac ?: "")
         }
     }
 }

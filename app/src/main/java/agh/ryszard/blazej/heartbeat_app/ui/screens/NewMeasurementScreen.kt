@@ -60,20 +60,24 @@ enum class Timepicker {
 @Composable
 @ExperimentalMaterial3Api
 fun NewMeasurementScreen(navController: NavHostController,
-                         scanViewModel: ScanViewModel) {
+                         scanViewModel: ScanViewModel,
+                         mac: String) {
 
     val coroutineScope = rememberCoroutineScope()
 
     // settings from current sensor
     val sensorSettings: SensorSettings = MovesenseSettings()
 
+    // toggle state of sensor units eg. "ECG": false
     val unitsToggle = remember { mutableStateMapOf<String, Boolean>() }
+    // expanded state of parameter menus per their unique ID
     val expanded = remember { mutableStateMapOf<Int, Boolean>() }
+    // selected option of parameter menu per their unique ID
     val selectedOptionText = remember { mutableStateMapOf<Int, String>() }
 
     sensorSettings.units.forEach { unit ->
         unitsToggle[unit.name] = false
-        unit.paramters.forEach { parameter ->
+        unit.parameters.forEach { parameter ->
             if(parameter is SensorToggleParameter) {
                 expanded[parameter.uniqueId] = false
                 selectedOptionText[parameter.uniqueId] = parameter.options[0]
@@ -235,7 +239,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                         )
                     }
                     if(unitsToggle[unit.name]!!){
-                        unit.paramters.forEach { parameter ->
+                        unit.parameters.forEach { parameter ->
                             if (parameter is SensorToggleParameter) {
                                 ExposedDropdownMenuBox(
                                     expanded = expanded[parameter.uniqueId]!!,
@@ -284,14 +288,28 @@ fun NewMeasurementScreen(navController: NavHostController,
             }
             Button(
                 onClick = {
+                    var chosenUnits: MutableList<HashMap<String, String>> = mutableListOf<HashMap<String, String>>()
+                    unitsToggle.forEach{ unit ->
+                        if(unit.value) {
+                            chosenUnits.add(HashMap())
+                            chosenUnits.last()["name"] = unit.key
+                            sensorSettings.units.last { it.name == unit.key }
+                                .parameters.forEach { parameter ->
+                                    chosenUnits.last()[parameter.encodedName] = selectedOptionText[parameter.uniqueId]!!
+                                }
+                        }
+                    }
                     coroutineScope.launch {
                         onSave(navController, scanViewModel,
                             Measurement(
-                                "test",
+                                mac,
+                                "movesense",
+                                label,
                                 startTime.hour,
                                 startTime.minute,
                                 endTime.hour,
-                                endTime.minute
+                                endTime.minute,
+                                chosenUnits.toList()
                             )
                         )
                     }
@@ -316,7 +334,6 @@ private suspend fun onSave(navController: NavHostController,
                            measurement: Measurement) {
     //TODO: check if hours are valid
     //TODO: handle next day
-    //TODO: pass real sensor MAC adress
     viewModel.addMeasurement(measurement)
-    navController.navigate(HeartbeatScreen.SensorMenu.name)
+    navController.navigate("${HeartbeatScreen.SensorMenu.name}/${measurement.mac}")
 }
