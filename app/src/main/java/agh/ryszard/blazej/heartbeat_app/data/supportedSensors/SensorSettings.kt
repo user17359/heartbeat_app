@@ -9,6 +9,7 @@ open class SensorSettings (
 
 class SensorUnit (
     val name: String,
+    val encodedName: String,
     val parameters: List<SensorParameter>
 )
 open class SensorParameter (

@@ -4,6 +4,7 @@ import agh.ryszard.blazej.heartbeat_app.ui.screens.DiaryEntryScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.GatewayLoadingScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.GatewayMenuScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.GatewaySelectionScreen
+import agh.ryszard.blazej.heartbeat_app.ui.screens.MeasurementLoadingScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.NewMeasurementScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorLoadingScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorMenuScreen
@@ -25,7 +26,8 @@ enum class HeartbeatScreen {
     SensorLoading,
     DiaryEntry,
     SensorMenu,
-    NewMeasurement
+    NewMeasurement,
+    MeasurementLoading
 }
 
 @Composable
@@ -62,6 +64,10 @@ fun HeartbeatApp(
         composable(HeartbeatScreen.NewMeasurement.name + "/{mac}") {
             val mac = it.arguments?.getString("mac")
             NewMeasurementScreen(navController, viewModel, mac ?: "")
+        }
+        composable(HeartbeatScreen.MeasurementLoading.name + "/{mac}") {
+            val mac = it.arguments?.getString("mac")
+            MeasurementLoadingScreen(navController, viewModel, mac ?: "")
         }
     }
 }

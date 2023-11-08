@@ -4,6 +4,7 @@ data class MovesenseSettings (
     override val units: List<SensorUnit> = listOf(
         SensorUnit(
             name = "ECG",
+            encodedName = "ecg",
             parameters = listOf(
                 SensorToggleParameter(
                     name = "Probing frequency",
@@ -29,18 +30,21 @@ data class MovesenseSettings (
         ),
         SensorUnit(
             name = "Accelerometer",
+            encodedName = "acc",
             parameters = listOf(
                 // TODO: add parameters
             )
         ),
         SensorUnit(
             name = "Gyroscope",
+            encodedName = "gyro",
             parameters = listOf(
                 // TODO: add parameters
             )
         ),
         SensorUnit(
             name = "Magnetometer",
+            encodedName = "mag",
             parameters = listOf(
                 // TODO: add parameters
             )

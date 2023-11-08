@@ -288,15 +288,16 @@ fun NewMeasurementScreen(navController: NavHostController,
             }
             Button(
                 onClick = {
-                    var chosenUnits: MutableList<HashMap<String, String>> = mutableListOf<HashMap<String, String>>()
+                    val chosenUnits: MutableList<HashMap<String, String>> = mutableListOf()
                     unitsToggle.forEach{ unit ->
                         if(unit.value) {
                             chosenUnits.add(HashMap())
-                            chosenUnits.last()["name"] = unit.key
-                            sensorSettings.units.last { it.name == unit.key }
-                                .parameters.forEach { parameter ->
-                                    chosenUnits.last()[parameter.encodedName] = selectedOptionText[parameter.uniqueId]!!
-                                }
+
+                            val lastUnit = sensorSettings.units.last { it.name == unit.key }
+                            lastUnit.parameters.forEach { parameter ->
+                                chosenUnits.last()[parameter.encodedName] = selectedOptionText[parameter.uniqueId]!!
+                            }
+                            chosenUnits.last()["name"] = lastUnit.encodedName
                         }
                     }
                     coroutineScope.launch {
@@ -335,5 +336,5 @@ private suspend fun onSave(navController: NavHostController,
     //TODO: check if hours are valid
     //TODO: handle next day
     viewModel.addMeasurement(measurement)
-    navController.navigate("${HeartbeatScreen.SensorMenu.name}/${measurement.mac}")
+    navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/${measurement.mac}")
 }

@@ -17,6 +17,7 @@ import com.juul.kable.peripheral
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -29,6 +30,7 @@ class ScanViewModel: ViewModel() {
 
     val listOfDevices = MutableLiveData<Set<AndroidAdvertisement>>()
     val connectionState = MutableLiveData<State>()
+    val reconnectState = MutableLiveData(false)
 
     private val _foundDevices = mutableListOf<String>()
     private val _rememberedSensors = mutableSetOf<String>()
@@ -142,7 +144,21 @@ class ScanViewModel: ViewModel() {
             service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
             characteristic = "18c7e933-73cf-4d47-9973-51a53f0fec4e",
         )
+        reconnectState.postValue(false)
         val jsonString = Json.encodeToString(measurement)
         _peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
+    
+    // for multi-connection workaround
+    suspend fun timedReconnect(timeMilis: Long) {
+        _peripheral!!.disconnect()
+        delay(timeMilis)
+        reconnectState.postValue(true)
+        print(_peripheral!!.state)
+        _peripheral!!.connect()
+        _peripheral!!.state.collect { state ->
+            connectionState.postValue(state)
+        }
+    }
+            
 }
