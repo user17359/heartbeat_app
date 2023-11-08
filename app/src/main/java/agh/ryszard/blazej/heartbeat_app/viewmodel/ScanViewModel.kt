@@ -16,6 +16,9 @@ import com.juul.kable.characteristicOf
 import com.juul.kable.logs.Logging
 import com.juul.kable.logs.SystemLogEngine
 import com.juul.kable.peripheral
+import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import com.patrykandpatrick.vico.core.entry.FloatEntry
+import com.patrykandpatrick.vico.core.entry.entryOf
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -34,9 +37,12 @@ class ScanViewModel: ViewModel() {
     val connectionState = MutableLiveData<State>()
     val reconnectState = MutableLiveData(false)
     val measurementState = MutableLiveData(SensorState.Empty)
+    val chartEntryModelProducer = ChartEntryModelProducer()
 
     private val _foundDevices = mutableListOf<String>()
     private val _rememberedSensors = mutableSetOf<String>()
+    private val _readings = mutableListOf<MutableList<FloatEntry>>()
+    private var _currentIndex = 0
     var peripheral: Peripheral? = null
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler{ _, throwable ->
@@ -47,6 +53,9 @@ class ScanViewModel: ViewModel() {
 
     init {
         listOfDevices.value = setOf()
+        _readings.add(mutableListOf())
+        _readings.add(mutableListOf())
+        _readings.add(mutableListOf())
     }
 
     suspend fun scanLeDevice() {
@@ -172,8 +181,27 @@ class ScanViewModel: ViewModel() {
        val observation = peripheral!!.observe(characteristic)
         observation.collect{ data ->
             val progress: ProgressReport = Json.decodeFromString(data.decodeToString())
-            measurementState.postValue(SensorState.fromString(progress.state))
+            val sensorState = SensorState.fromString(progress.state)
+
+            measurementState.postValue(sensorState)
+
+            if(sensorState == SensorState.Measuring) {
+                val regex = Regex("(?<=acc)[+-]?([0-9]*[.])?[0-9]+")
+                val results = regex.findAll(progress.info).map { it.value }.toList()
+
+                _readings[0].add(entryOf(_currentIndex, results[1].format("%.2f").toFloat()))
+                _readings[1].add(entryOf(_currentIndex, results[2].format("%.2f").toFloat()))
+                _readings[2].add(entryOf(_currentIndex, results[3].format("%.2f").toFloat()))
+
+                _currentIndex++
+
+                chartEntryModelProducer.setEntries(_readings)
+            }
+             else {
+                _readings.clear()
+                chartEntryModelProducer.setEntries()
+                _currentIndex = 0
+            }
         }
     }
-            
 }
