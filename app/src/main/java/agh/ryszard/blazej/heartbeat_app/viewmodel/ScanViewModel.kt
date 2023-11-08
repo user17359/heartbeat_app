@@ -2,6 +2,8 @@ package agh.ryszard.blazej.heartbeat_app.viewmodel
 
 import agh.ryszard.blazej.heartbeat_app.data.BtDevice
 import agh.ryszard.blazej.heartbeat_app.data.Measurement
+import agh.ryszard.blazej.heartbeat_app.data.ProgressReport
+import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorState
 import agh.ryszard.blazej.heartbeat_app.utils.peripheralScope
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,10 +33,11 @@ class ScanViewModel: ViewModel() {
     val listOfDevices = MutableLiveData<Set<AndroidAdvertisement>>()
     val connectionState = MutableLiveData<State>()
     val reconnectState = MutableLiveData(false)
+    val measurementState = MutableLiveData(SensorState.Empty)
 
     private val _foundDevices = mutableListOf<String>()
     private val _rememberedSensors = mutableSetOf<String>()
-    private var _peripheral: Peripheral? = null
+    var peripheral: Peripheral? = null
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler{ _, throwable ->
         throwable.printStackTrace()
@@ -72,7 +75,7 @@ class ScanViewModel: ViewModel() {
         val peripheral = _scope.peripheral(advertisement) {
 
         }
-        _peripheral = peripheral
+        this.peripheral = peripheral
         _scope.launch {
             asyncConnection()
         }
@@ -86,15 +89,15 @@ class ScanViewModel: ViewModel() {
     }
 
     private suspend fun asyncConnection() {
-        _peripheral!!.connect()
-        _peripheral!!.state.collect { state ->
+        peripheral!!.connect()
+        peripheral!!.state.collect { state ->
             connectionState.postValue(state)
         }
     }
 
     private suspend fun asyncDisconnection() {
-        _peripheral!!.disconnect()
-        _peripheral!!.state.collect { state ->
+        peripheral!!.disconnect()
+        peripheral!!.state.collect { state ->
             connectionState.postValue(state)
         }
     }
@@ -106,7 +109,7 @@ class ScanViewModel: ViewModel() {
             service = "6672b3e6-477e-4e52-a3fb-a440c57dc857",
             characteristic = "9f03f5db-93ba-402b-951f-1c8e008b5adc",
         )
-        val reading = _peripheral!!.read(characteristic).decodeToString()
+        val reading = peripheral!!.read(characteristic).decodeToString()
         val sensors: List<BtDevice> = Json.decodeFromString(reading)
         sensors.forEach{ sensor ->
             _rememberedSensors.add(sensor.mac)
@@ -119,7 +122,7 @@ class ScanViewModel: ViewModel() {
             service = "6672b3e6-477e-4e52-a3fb-a440c57dc857",
             characteristic = "5fc4077d-e88f-4b5d-956b-955d30ec5899",
         )
-        val reading = _peripheral!!.read(characteristic).decodeToString()
+        val reading = peripheral!!.read(characteristic).decodeToString()
         val sensors: List<BtDevice> = Json.decodeFromString(reading)
         val filteredSensors = mutableListOf<BtDevice>()
         sensors.forEach{ sensor ->
@@ -136,7 +139,7 @@ class ScanViewModel: ViewModel() {
             characteristic = "1fe83b02-0788-4af7-9a69-af6b9e9782a7",
         )
         val jsonString = Json.encodeToString(sensor)
-        _peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
+        peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
 
     suspend fun addMeasurement(measurement: Measurement) {
@@ -146,18 +149,30 @@ class ScanViewModel: ViewModel() {
         )
         reconnectState.postValue(false)
         val jsonString = Json.encodeToString(measurement)
-        _peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
+        peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
     
     // for multi-connection workaround
     suspend fun timedReconnect(timeMilis: Long) {
-        _peripheral!!.disconnect()
+        peripheral!!.disconnect()
         delay(timeMilis)
         reconnectState.postValue(true)
-        print(_peripheral!!.state)
-        _peripheral!!.connect()
-        _peripheral!!.state.collect { state ->
+        print(peripheral!!.state)
+        peripheral!!.connect()
+        peripheral!!.state.collect { state ->
             connectionState.postValue(state)
+        }
+    }
+
+    suspend fun checkStatus() {
+        val characteristic = characteristicOf(
+            service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
+            characteristic = "46dff0ae-21e2-4e55-8b38-3ae249e23884",
+        )
+       val observation = peripheral!!.observe(characteristic)
+        observation.collect{ data ->
+            val progress: ProgressReport = Json.decodeFromString(data.decodeToString())
+            measurementState.postValue(SensorState.fromString(progress.state))
         }
     }
             

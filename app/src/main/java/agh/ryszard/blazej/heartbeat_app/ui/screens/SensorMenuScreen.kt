@@ -1,6 +1,7 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,20 +19,40 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-enum class SensorState{
-    Empty,
-    Waiting,
-    Measuring
+enum class SensorState(val jsonCode: String){
+    Empty("empty"),
+    Scheduled("scheduled"),
+    Measuring("measuring");
+
+    companion object {
+        fun fromString(value: String) = SensorState.values().first { it.jsonCode == value }
+    }
 }
 
 @Composable
-fun SensorMenuScreen(navController: NavHostController, mac: String) {
-    var sensorState =  SensorState.Measuring
+fun SensorMenuScreen(
+    navController: NavHostController,
+    scanViewModel: ScanViewModel,
+    mac: String,
+    name: String) {
+
+    val sensorState = scanViewModel.measurementState.observeAsState()
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            scanViewModel.checkStatus()
+        }
+    }
+
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
             modifier = Modifier
@@ -50,7 +71,7 @@ fun SensorMenuScreen(navController: NavHostController, mac: String) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Movesense 543534532",
+                        text = name,
                         style = MaterialTheme.typography.titleLarge
                     )
 
@@ -67,7 +88,7 @@ fun SensorMenuScreen(navController: NavHostController, mac: String) {
                 )
             }
             Button(
-                onClick = { onStartMeasurement(navController, mac) },
+                onClick = { onStartMeasurement(navController, mac, name) },
                 modifier = Modifier
                     .padding(36.dp, 12.dp, 36.dp, 18.dp)
                     .fillMaxWidth()
@@ -75,10 +96,10 @@ fun SensorMenuScreen(navController: NavHostController, mac: String) {
             ) {
                 Text(text = "Start measurement")
             }
-            if(sensorState == SensorState.Empty){
+            if(sensorState.value == SensorState.Empty){
 
             }
-            else if(sensorState == SensorState.Waiting){
+            else if(sensorState.value == SensorState.Scheduled){
                 Text(
                     //TODO: get actual data
                     text = "Starting at 14:44",
@@ -87,8 +108,14 @@ fun SensorMenuScreen(navController: NavHostController, mac: String) {
                     style = MaterialTheme.typography.displaySmall
                 )
             }
-            else if(sensorState == SensorState.Measuring){
+            else if(sensorState.value == SensorState.Measuring){
                 // TODO plotting of current signal
+                Text(
+                    text = "Plots will go here",
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    style = MaterialTheme.typography.displaySmall
+                )
             }
         }
     }
@@ -98,6 +125,6 @@ private fun onBack(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }
 
-private fun onStartMeasurement(navController: NavHostController, mac: String) {
-    navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac")
+private fun onStartMeasurement(navController: NavHostController, mac: String, name: String) {
+    navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac/$name")
 }

@@ -85,7 +85,7 @@ fun GatewayMenuScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Heartbeat 5435",
+                        text = scanViewModel.peripheral?.name ?: "Gateway",
                         style = MaterialTheme.typography.headlineMedium
                     )
 
@@ -109,7 +109,7 @@ fun GatewayMenuScreen(
                         icon = painterResource(R.drawable.ecg_heart_24px),
                         name = sensor.name,
                         macAddress = sensor.mac,
-                        onClick = { onSensorClick(navController, sensor.mac) }
+                        onClick = { onSensorClick(navController, sensor.mac, sensor.name) }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -142,8 +142,8 @@ fun GatewayMenuScreen(
 private fun onDisconnect(scanViewModel: ScanViewModel) {
     scanViewModel.disconnectLePeripheral()
 }
-private fun onSensorClick(navController: NavHostController, mac: String) {
-    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac")
+private fun onSensorClick(navController: NavHostController, mac: String, name: String) {
+    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac/$name")
 }
 private fun onAddEvent(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.DiaryEntry.name)

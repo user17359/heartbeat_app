@@ -35,7 +35,8 @@ import kotlinx.coroutines.withContext
 fun MeasurementLoadingScreen(
     navHostController: NavHostController,
     scanViewModel: ScanViewModel,
-    mac: String
+    mac: String,
+    name: String
 ) {
     val connectionState = scanViewModel.connectionState.observeAsState()
     val reconnectState = scanViewModel.reconnectState.observeAsState()
@@ -48,7 +49,7 @@ fun MeasurementLoadingScreen(
 
     LaunchedEffect(connectionState.value) {
         if(connectionState.value is State.Connected && reconnectState.value == true) {
-            onLoadingEnd(navHostController, mac)
+            onLoadingEnd(navHostController, mac, name)
         }
     }
 
@@ -90,6 +91,6 @@ fun MeasurementLoadingScreen(
     }
 }
 
-private suspend fun onLoadingEnd(navController: NavHostController, mac: String) = coroutineScope{
-    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac")
+private suspend fun onLoadingEnd(navController: NavHostController, mac: String, name: String) = coroutineScope{
+    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac/$name")
 }

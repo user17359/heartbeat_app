@@ -61,7 +61,8 @@ enum class Timepicker {
 @ExperimentalMaterial3Api
 fun NewMeasurementScreen(navController: NavHostController,
                          scanViewModel: ScanViewModel,
-                         mac: String) {
+                         mac: String,
+                         name: String) {
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -103,7 +104,7 @@ fun NewMeasurementScreen(navController: NavHostController,
             if (showDialog.value) {
                 AlertDialogTemplate(
                     onDismissRequest = { showDialog.value = false },
-                    onConfirmation = { showDialog.value = false; onCancel(navController) },
+                    onConfirmation = { showDialog.value = false; onCancel(navController, mac, name) },
                     dialogTitle = "Are you sure to cancel?",
                     dialogText = "All data will be lost"
                 )
@@ -301,7 +302,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                         }
                     }
                     coroutineScope.launch {
-                        onSave(navController, scanViewModel,
+                        onSave(navController, scanViewModel, name,
                             Measurement(
                                 mac,
                                 "movesense",
@@ -326,15 +327,17 @@ fun NewMeasurementScreen(navController: NavHostController,
     }
 }
 
-private fun onCancel(navController: NavHostController) {
-    navController.navigate(HeartbeatScreen.SensorMenu.name)
+private fun onCancel(navController: NavHostController, mac: String, name: String) {
+    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac/$name")
 }
 
 private suspend fun onSave(navController: NavHostController,
                            viewModel: ScanViewModel,
-                           measurement: Measurement) {
+                           name: String,
+                           measurement: Measurement,
+                           ) {
     //TODO: check if hours are valid
     //TODO: handle next day
     viewModel.addMeasurement(measurement)
-    navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/${measurement.mac}")
+    navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/${measurement.mac}/${name}")
 }
