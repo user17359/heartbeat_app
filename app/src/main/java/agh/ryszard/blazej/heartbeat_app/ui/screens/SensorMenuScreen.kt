@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +41,7 @@ import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.scroll.AutoScrollCondition
 import com.patrykandpatrick.vico.core.scroll.InitialScroll
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 enum class SensorState(val jsonCode: String){
@@ -59,10 +61,14 @@ fun SensorMenuScreen(
     mac: String,
     name: String) {
 
+    val coroutineScope = rememberCoroutineScope()
     val sensorState = scanViewModel.measurementState.observeAsState()
+    val label = scanViewModel.label.observeAsState()
+    val startTime = scanViewModel.startTime.observeAsState()
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
+            scanViewModel.startStatus(mac)
             scanViewModel.checkStatus()
         }
     }
@@ -94,33 +100,44 @@ fun SensorMenuScreen(
                     }
                 }
                 Divider()
-                Text(
-                    text = "ECG test",
-                    style = MaterialTheme.typography.titleMedium,
+                if(sensorState.value != SensorState.Empty) {
+                    Text(
+                        text = label.value ?: "",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier
+                            .padding(top = 12.dp, bottom = 12.dp),
+                    )
+                }
+            }
+            if(sensorState.value == SensorState.Empty){
+                Button(
+                    onClick = { onStartMeasurement(navController, mac, name) },
                     modifier = Modifier
-                        .padding(top = 12.dp, bottom = 12.dp),
-                )
+                        .padding(36.dp, 12.dp, 36.dp, 18.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    Text(text = "Start measurement")
+                }
             }
-            Button(
-                onClick = { onStartMeasurement(navController, mac, name) },
-                modifier = Modifier
-                    .padding(36.dp, 12.dp, 36.dp, 18.dp)
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-            ) {
-                Text(text = "Start measurement")
-            }
-            /*if(sensorState.value == SensorState.Empty){
-
-            }*/
             if(sensorState.value == SensorState.Scheduled){
                 Text(
-                    //TODO: get actual data
-                    text = "Starting at 14:44",
+                    text = "Starting at " + startTime.value,
                     modifier = Modifier
                         .align(Alignment.Center),
                     style = MaterialTheme.typography.displaySmall
                 )
+                Button(
+                    onClick = { coroutineScope.launch {
+                        onStopMeasurement(viewModel = scanViewModel)
+                    } },
+                    modifier = Modifier
+                        .padding(36.dp, 12.dp, 36.dp, 18.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    Text(text = "Stop measurement")
+                }
             }
             else if(sensorState.value == SensorState.Measuring){
                 Column (
@@ -153,9 +170,20 @@ fun SensorMenuScreen(
                                 tween(100)
                             ),
                             runInitialAnimation = false,
-                            diffAnimationSpec = tween(0)
+                            diffAnimationSpec = tween(0),
                         )
                     }
+                }
+                Button(
+                    onClick = { coroutineScope.launch {
+                        onStopMeasurement(viewModel = scanViewModel)
+                    } },
+                    modifier = Modifier
+                        .padding(36.dp, 12.dp, 36.dp, 18.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    Text(text = "Stop measurement")
                 }
             }
         }
@@ -168,4 +196,8 @@ private fun onBack(navController: NavHostController) {
 
 private fun onStartMeasurement(navController: NavHostController, mac: String, name: String) {
     navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac/$name")
+}
+
+private suspend fun onStopMeasurement(viewModel: ScanViewModel) {
+    viewModel.endMeasurement()
 }

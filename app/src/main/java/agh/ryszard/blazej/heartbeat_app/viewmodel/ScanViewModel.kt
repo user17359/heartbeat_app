@@ -3,8 +3,10 @@ package agh.ryszard.blazej.heartbeat_app.viewmodel
 import agh.ryszard.blazej.heartbeat_app.data.BtDevice
 import agh.ryszard.blazej.heartbeat_app.data.Measurement
 import agh.ryszard.blazej.heartbeat_app.data.ProgressReport
+import agh.ryszard.blazej.heartbeat_app.data.ProgressStatus
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorState
 import agh.ryszard.blazej.heartbeat_app.utils.peripheralScope
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.juul.kable.AndroidAdvertisement
@@ -29,7 +31,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 // Time after we stop scanning
-private const val SCAN_PERIOD: Long = 60000
+//private const val SCAN_PERIOD: Long = 60000
 
 class ScanViewModel: ViewModel() {
 
@@ -38,10 +40,13 @@ class ScanViewModel: ViewModel() {
     val reconnectState = MutableLiveData(false)
     val measurementState = MutableLiveData(SensorState.Empty)
     val chartEntryModelProducer = ChartEntryModelProducer()
+    val label = MutableLiveData("")
+    val startTime = MutableLiveData("")
 
     private val _foundDevices = mutableListOf<String>()
     private val _rememberedSensors = mutableSetOf<String>()
     private val _readings = mutableListOf<MutableList<FloatEntry>>()
+    private var _plotReady = false
     private var _currentIndex = 0
     var peripheral: Peripheral? = null
 
@@ -187,21 +192,58 @@ class ScanViewModel: ViewModel() {
 
             if(sensorState == SensorState.Measuring) {
                 val regex = Regex("(?<=acc)[+-]?([0-9]*[.])?[0-9]+")
-                val results = regex.findAll(progress.info).map { it.value }.toList()
+                val results = regex.findAll(progress.info).map { it.value.format("%.2f").toFloat() }.toList()
 
-                _readings[0].add(entryOf(_currentIndex, results[1].format("%.2f").toFloat()))
-                _readings[1].add(entryOf(_currentIndex, results[2].format("%.2f").toFloat()))
-                _readings[2].add(entryOf(_currentIndex, results[3].format("%.2f").toFloat()))
+                Log.d("miau", "_currentIndex: $_currentIndex, x: ${results[1]}, y: ${results[2]}, z: ${results[3]}")
+                if(_plotReady) {
+                    Log.d("miau", "adding entry")
+                    _readings[0].add(entryOf(_currentIndex, results[1]))
+                    _readings[1].add(entryOf(_currentIndex, results[2]))
+                    _readings[2].add(entryOf(_currentIndex, results[3]))
 
-                _currentIndex++
+                    chartEntryModelProducer.setEntries(_readings)
+                    chartEntryModelProducer.requireModel()
 
-                chartEntryModelProducer.setEntries(_readings)
+                    _currentIndex++
+                }
             }
              else {
+                _plotReady = false
                 _readings.clear()
-                chartEntryModelProducer.setEntries()
+                _readings.add(mutableListOf())
+                _readings.add(mutableListOf())
+                _readings.add(mutableListOf())
+                chartEntryModelProducer.setEntries(_readings)
                 _currentIndex = 0
             }
         }
     }
+
+    suspend fun startStatus(mac: String) {
+        val readCharacteristic = characteristicOf(
+            service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
+            characteristic = "e946c454-6083-44d1-a726-076cecfc3744"
+        )
+        val writeCharacteristic = characteristicOf(
+            service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
+            characteristic = "2fd2ac39-1f6b-4d55-aa2b-3dd049420235"
+        )
+
+        peripheral!!.write(writeCharacteristic, mac.toByteArray(Charsets.UTF_8))
+        val jsonData = peripheral!!.read(readCharacteristic).decodeToString()
+        val decodedData = Json.decodeFromString<ProgressStatus>(jsonData)
+        measurementState.postValue(SensorState.fromString(decodedData.state))
+        label.postValue(decodedData.label)
+        startTime.postValue(decodedData.startTime)
+        _plotReady = true
+    }
+
+    suspend fun endMeasurement(){
+        val characteristic = characteristicOf(
+            service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
+            characteristic = "1fbbda31-a97a-4d1d-a4dd-a7c17b853dcd"
+        )
+        peripheral!!.read(characteristic)
+    }
+
 }
