@@ -27,27 +27,39 @@ data class MovesenseSettings (
                     uniqueId = 1
                 )
             ),
+            dataParser = {data: String -> movesenseParser(data, "ecg")},
+            dataChannels = 1,
+            dataSamples = 16
         ),
         SensorUnit(
             name = "Accelerometer",
             encodedName = "acc",
             parameters = listOf(
                 // TODO: add parameters
-            )
+            ),
+            dataParser = {data: String -> movesenseParser(data, "acc") },
+            dataChannels = 3,
+            dataSamples = 1
         ),
         SensorUnit(
             name = "Gyroscope",
             encodedName = "gyro",
             parameters = listOf(
                 // TODO: add parameters
-            )
+            ),
+            dataParser = {data: String -> movesenseParser(data, "gyro") },
+            dataChannels = 3,
+            dataSamples = 1
         ),
         SensorUnit(
             name = "Magnetometer",
             encodedName = "mag",
             parameters = listOf(
                 // TODO: add parameters
-            )
+            ),
+            dataParser = {data: String -> movesenseParser(data, "mag") },
+            dataChannels = 3,
+            dataSamples = 1
         )
     )
 ) : SensorSettings(units)

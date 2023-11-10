@@ -154,13 +154,14 @@ fun SensorMenuScreen(
                                     LineChart.LineSpec(lineBackgroundShader = null, lineColor = MaterialTheme.colorScheme.primary.toArgb()),
                                     LineChart.LineSpec(lineBackgroundShader = null, lineColor = Color(0xFFCC7722).toArgb()),
                                     LineChart.LineSpec(lineBackgroundShader = null, lineColor = MaterialTheme.colorScheme.tertiary.toArgb())
-                                )
+                                ),
+                                spacing = 6.dp
                             ),
                             chartModelProducer = scanViewModel.chartEntryModelProducer,
                             startAxis = rememberStartAxis(),
                             bottomAxis = rememberBottomAxis(
                                 itemPlacer = AxisItemPlacer.Horizontal.default(
-                                    spacing = 25
+                                    spacing = 1000
                                 )
                             ),
                             chartScrollSpec = ChartScrollSpec(

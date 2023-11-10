@@ -10,7 +10,10 @@ open class SensorSettings (
 class SensorUnit (
     val name: String,
     val encodedName: String,
-    val parameters: List<SensorParameter>
+    val parameters: List<SensorParameter>,
+    val dataParser: (String) -> List<Float>,
+    val dataChannels: Int,
+    val dataSamples: Int
 )
 open class SensorParameter (
     open val name: String,

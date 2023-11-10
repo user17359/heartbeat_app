@@ -4,6 +4,7 @@ import agh.ryszard.blazej.heartbeat_app.data.BtDevice
 import agh.ryszard.blazej.heartbeat_app.data.Measurement
 import agh.ryszard.blazej.heartbeat_app.data.ProgressReport
 import agh.ryszard.blazej.heartbeat_app.data.ProgressStatus
+import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.MovesenseSettings
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorState
 import agh.ryszard.blazej.heartbeat_app.utils.peripheralScope
 import android.util.Log
@@ -35,6 +36,8 @@ import kotlinx.serialization.json.Json
 
 class ScanViewModel: ViewModel() {
 
+    private val sensorSettings = MovesenseSettings()
+
     val listOfDevices = MutableLiveData<Set<AndroidAdvertisement>>()
     val connectionState = MutableLiveData<State>()
     val reconnectState = MutableLiveData(false)
@@ -45,9 +48,10 @@ class ScanViewModel: ViewModel() {
 
     private val _foundDevices = mutableListOf<String>()
     private val _rememberedSensors = mutableSetOf<String>()
-    private val _readings = mutableListOf<MutableList<FloatEntry>>()
+    private var _readings = mutableListOf<MutableList<FloatEntry>>()
     private var _plotReady = false
     private var _currentIndex = 0
+    private var _units = listOf<String>()
     var peripheral: Peripheral? = null
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler{ _, throwable ->
@@ -58,9 +62,6 @@ class ScanViewModel: ViewModel() {
 
     init {
         listOfDevices.value = setOf()
-        _readings.add(mutableListOf())
-        _readings.add(mutableListOf())
-        _readings.add(mutableListOf())
     }
 
     suspend fun scanLeDevice() {
@@ -190,30 +191,40 @@ class ScanViewModel: ViewModel() {
 
             measurementState.postValue(sensorState)
 
+            val measuringUnit = sensorSettings.units.first { it.encodedName == _units[0] }
+
             if(sensorState == SensorState.Measuring) {
-                val regex = Regex("(?<=acc)[+-]?([0-9]*[.])?[0-9]+")
-                val results = regex.findAll(progress.info).map { it.value.format("%.2f").toFloat() }.toList()
+                val results = measuringUnit.dataParser(progress.info)
 
-                Log.d("miau", "_currentIndex: $_currentIndex, x: ${results[1]}, y: ${results[2]}, z: ${results[3]}")
-                if(_plotReady) {
-                    Log.d("miau", "adding entry")
-                    _readings[0].add(entryOf(_currentIndex, results[1]))
-                    _readings[1].add(entryOf(_currentIndex, results[2]))
-                    _readings[2].add(entryOf(_currentIndex, results[3]))
+                val channels = measuringUnit.dataChannels
+                val samples = measuringUnit.dataSamples
+                // + 1 to account for timestamp
+                if(results.size == (channels * samples + 1)){
+                    if(_plotReady) {
+                        for (channel in 0..<channels) {
+                            for (sample in 0..<samples) {
+                                // + 1 to account for timestamp, assuming its always first
+                                Log.d("miau", "current channel: $channel, current sample: $sample")
+                                _readings[channel].add(
+                                    entryOf(
+                                        _currentIndex,
+                                        results[channel * samples + sample + 1]
+                                    )
+                                )
+                                _currentIndex++
+                            }
+                        }
 
-                    chartEntryModelProducer.setEntries(_readings)
-                    chartEntryModelProducer.requireModel()
-
-                    _currentIndex++
+                        Log.d("miau", _readings.toString())
+                        chartEntryModelProducer.setEntries(_readings)
+                    }
+                }
+                else{
+                    Log.d("miau", progress.info)
                 }
             }
              else {
                 _plotReady = false
-                _readings.clear()
-                _readings.add(mutableListOf())
-                _readings.add(mutableListOf())
-                _readings.add(mutableListOf())
-                chartEntryModelProducer.setEntries(_readings)
                 _currentIndex = 0
             }
         }
@@ -235,6 +246,18 @@ class ScanViewModel: ViewModel() {
         measurementState.postValue(SensorState.fromString(decodedData.state))
         label.postValue(decodedData.label)
         startTime.postValue(decodedData.startTime)
+        _units = decodedData.units
+
+        if(_units.isNotEmpty()) {
+            val measuringUnit = sensorSettings.units.first { it.encodedName == _units[0] }
+
+            val newReadings = (mutableListOf<MutableList<FloatEntry>>())
+            for (i in 0..<measuringUnit.dataChannels) {
+                newReadings.add(mutableListOf())
+            }
+            _readings = newReadings
+        }
+
         _plotReady = true
     }
 
