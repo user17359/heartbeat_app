@@ -19,7 +19,7 @@ fun TimepickerTextField (onClick: () -> Unit,
                          label: String){
     OutlinedTextField(
         value = if(isTimeSelected)
-            time.hour.toString() + ":" + time.minute.toString()
+            String.format("%02d:%02d", time.hour, time.minute)
         else
             "",
         enabled = false,

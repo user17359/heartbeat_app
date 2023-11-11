@@ -2,9 +2,11 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
+import agh.ryszard.blazej.heartbeat_app.data.DiaryEntry
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimepickerTextField
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,16 +38,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
 
 @Composable
 @ExperimentalMaterial3Api
-fun DiaryEntryScreen(navController: NavHostController) {
+fun DiaryEntryScreen(navController: NavHostController, scanViewModel: ScanViewModel) {
     var label by remember { mutableStateOf("") }
     val time = rememberTimePickerState(is24Hour = true)
     var description by remember { mutableStateOf("") }
     val showTimePicker = remember { mutableStateOf(false) }
     var isTimeSelected = false
     val showDialog = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold (containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
@@ -130,7 +135,13 @@ fun DiaryEntryScreen(navController: NavHostController) {
                 )
             }
             Button(
-                onClick = { onSave(navController) },
+                onClick = {
+                    coroutineScope.launch{
+                        onSave(navController,
+                            scanViewModel,
+                            DiaryEntry(label, time.hour, time.minute, description))
+                    }
+                },
                 modifier = Modifier
                     .padding(36.dp, 12.dp, 36.dp, 18.dp)
                     .fillMaxWidth()
@@ -146,6 +157,7 @@ private fun onCancel(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }
 
-private fun onSave(navController: NavHostController) {
+private suspend fun onSave(navController: NavHostController, viewModel: ScanViewModel, entry: DiaryEntry) {
+    viewModel.addEntry(entry)
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }

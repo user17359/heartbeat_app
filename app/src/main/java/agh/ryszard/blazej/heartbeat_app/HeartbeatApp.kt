@@ -60,7 +60,7 @@ fun HeartbeatApp(
             SensorMenuScreen(navController, viewModel, mac ?: "", name ?: "")
         }
         composable(HeartbeatScreen.DiaryEntry.name) {
-            DiaryEntryScreen(navController)
+            DiaryEntryScreen(navController, viewModel)
         }
         composable(HeartbeatScreen.NewMeasurement.name + "/{mac}/{name}") {
             val mac = it.arguments?.getString("mac")

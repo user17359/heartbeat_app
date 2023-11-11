@@ -1,6 +1,7 @@
 package agh.ryszard.blazej.heartbeat_app.viewmodel
 
 import agh.ryszard.blazej.heartbeat_app.data.BtDevice
+import agh.ryszard.blazej.heartbeat_app.data.DiaryEntry
 import agh.ryszard.blazej.heartbeat_app.data.Measurement
 import agh.ryszard.blazej.heartbeat_app.data.ProgressReport
 import agh.ryszard.blazej.heartbeat_app.data.ProgressStatus
@@ -267,6 +268,15 @@ class ScanViewModel: ViewModel() {
             characteristic = "1fbbda31-a97a-4d1d-a4dd-a7c17b853dcd"
         )
         peripheral!!.read(characteristic)
+    }
+
+    suspend fun addEntry(entry: DiaryEntry) {
+        val characteristic = characteristicOf(
+            service = "4f8ef7bf-fe20-437b-9320-89e6108c82e0",
+            characteristic = "27e571d9-53fa-4756-88da-07716d7ea633",
+        )
+        val jsonString = Json.encodeToString(entry)
+        peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
 
 }
