@@ -1,6 +1,6 @@
 package agh.ryszard.blazej.heartbeat_app.mockData
 
-import agh.ryszard.blazej.heartbeat_app.data.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.BtDevice
 
 fun loadConncectedSensors(): List<BtDevice> {
     return listOf<BtDevice>(

@@ -1,4 +1,9 @@
-package agh.ryszard.blazej.heartbeat_app.data.supportedSensors
+package agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.Movesense
+
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.TypeTag
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorToggleParameter
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorUnit
 
 data class MovesenseSettings (
     override val units: List<SensorUnit> = listOf(
@@ -27,7 +32,7 @@ data class MovesenseSettings (
                     uniqueId = 1
                 )
             ),
-            dataParser = {data: String -> movesenseParser(data, "ecg")},
+            dataParser = {data: String -> movesenseParser(data, "ecg") },
             dataChannels = 1,
             dataSamples = 16
         ),
@@ -61,5 +66,6 @@ data class MovesenseSettings (
             dataChannels = 3,
             dataSamples = 1
         )
-    )
-) : SensorSettings(units)
+    ),
+    override val tag: TypeTag
+) : SensorSettings(units, tag, ::movesenseValidator)

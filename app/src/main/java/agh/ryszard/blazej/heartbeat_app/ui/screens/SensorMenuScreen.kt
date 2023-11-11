@@ -58,9 +58,9 @@ enum class SensorState(val jsonCode: String){
 fun SensorMenuScreen(
     navController: NavHostController,
     scanViewModel: ScanViewModel,
-    mac: String,
-    name: String) {
+    mac: String) {
 
+    val device = scanViewModel.getDevice(mac)
     val coroutineScope = rememberCoroutineScope()
     val sensorState = scanViewModel.measurementState.observeAsState()
     val label = scanViewModel.label.observeAsState()
@@ -68,8 +68,8 @@ fun SensorMenuScreen(
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            scanViewModel.startStatus(mac)
-            scanViewModel.checkStatus()
+            scanViewModel.startStatus(device)
+            scanViewModel.checkStatus(device)
         }
     }
 
@@ -91,7 +91,7 @@ fun SensorMenuScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = name,
+                        text = device.name,
                         style = MaterialTheme.typography.titleLarge
                     )
 
@@ -111,7 +111,7 @@ fun SensorMenuScreen(
             }
             if(sensorState.value == SensorState.Empty){
                 Button(
-                    onClick = { onStartMeasurement(navController, mac, name) },
+                    onClick = { onStartMeasurement(navController, mac) },
                     modifier = Modifier
                         .padding(36.dp, 12.dp, 36.dp, 18.dp)
                         .fillMaxWidth()
@@ -195,8 +195,8 @@ private fun onBack(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
 }
 
-private fun onStartMeasurement(navController: NavHostController, mac: String, name: String) {
-    navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac/$name")
+private fun onStartMeasurement(navController: NavHostController, mac: String) {
+    navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac")
 }
 
 private suspend fun onStopMeasurement(viewModel: ScanViewModel) {

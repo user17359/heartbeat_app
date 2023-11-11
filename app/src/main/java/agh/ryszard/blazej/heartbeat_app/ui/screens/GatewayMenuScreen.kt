@@ -2,7 +2,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
-import agh.ryszard.blazej.heartbeat_app.data.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.BtDevice
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
@@ -109,7 +109,7 @@ fun GatewayMenuScreen(
                         icon = painterResource(R.drawable.ecg_heart_24px),
                         name = sensor.name,
                         macAddress = sensor.mac,
-                        onClick = { onSensorClick(navController, sensor.mac, sensor.name) }
+                        onClick = { onSensorClick(navController, sensor.mac) }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -142,8 +142,8 @@ fun GatewayMenuScreen(
 private fun onDisconnect(scanViewModel: ScanViewModel) {
     scanViewModel.disconnectLePeripheral()
 }
-private fun onSensorClick(navController: NavHostController, mac: String, name: String) {
-    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac/$name")
+private fun onSensorClick(navController: NavHostController, mac: String) {
+    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac")
 }
 private fun onAddEvent(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.DiaryEntry.name)

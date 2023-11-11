@@ -1,10 +1,14 @@
-package agh.ryszard.blazej.heartbeat_app.data.supportedSensors
+package agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors
+
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.BtDevice
 
 enum class ParameterType {
     Toggle
 }
 open class SensorSettings (
-    open val units: List<SensorUnit>
+    open val units: List<SensorUnit>,
+    open val tag: TypeTag,
+    val sensorValidator: (BtDevice) -> Boolean
 )
 
 class SensorUnit (

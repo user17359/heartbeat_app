@@ -2,7 +2,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
-import agh.ryszard.blazej.heartbeat_app.data.DiaryEntry
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.DiaryEntry
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimepickerTextField
@@ -139,7 +139,8 @@ fun DiaryEntryScreen(navController: NavHostController, scanViewModel: ScanViewMo
                     coroutineScope.launch{
                         onSave(navController,
                             scanViewModel,
-                            DiaryEntry(label, time.hour, time.minute, description))
+                            DiaryEntry(label, time.hour, time.minute, description)
+                        )
                     }
                 },
                 modifier = Modifier

@@ -1,11 +1,13 @@
 package agh.ryszard.blazej.heartbeat_app.viewmodel
 
-import agh.ryszard.blazej.heartbeat_app.data.BtDevice
-import agh.ryszard.blazej.heartbeat_app.data.DiaryEntry
-import agh.ryszard.blazej.heartbeat_app.data.Measurement
-import agh.ryszard.blazej.heartbeat_app.data.ProgressReport
-import agh.ryszard.blazej.heartbeat_app.data.ProgressStatus
-import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.MovesenseSettings
+import agh.ryszard.blazej.heartbeat_app.data.DeviceRepository
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.DiaryEntry
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.Measurement
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.ProgressReport
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.ProgressStatus
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SupportedSensors
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorState
 import agh.ryszard.blazej.heartbeat_app.utils.peripheralScope
 import android.util.Log
@@ -35,9 +37,9 @@ import kotlinx.serialization.json.Json
 // Time after we stop scanning
 //private const val SCAN_PERIOD: Long = 60000
 
-class ScanViewModel: ViewModel() {
+class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepository()): ViewModel() {
 
-    private val sensorSettings = MovesenseSettings()
+    private val supportedSensors = SupportedSensors()
 
     val listOfDevices = MutableLiveData<Set<AndroidAdvertisement>>()
     val connectionState = MutableLiveData<State>()
@@ -128,7 +130,11 @@ class ScanViewModel: ViewModel() {
         val reading = peripheral!!.read(characteristic).decodeToString()
         val sensors: List<BtDevice> = Json.decodeFromString(reading)
         sensors.forEach{ sensor ->
-            _rememberedSensors.add(sensor.mac)
+            supportedSensors.settingsList.forEach { sensorType ->
+                if(sensorType.sensorValidator(sensor)) {
+                    _rememberedSensors.add(sensor.mac)
+                }
+            }
         }
         return sensors
     }
@@ -143,7 +149,14 @@ class ScanViewModel: ViewModel() {
         val filteredSensors = mutableListOf<BtDevice>()
         sensors.forEach{ sensor ->
             if(sensor.mac !in _rememberedSensors){
-                filteredSensors.add(sensor)
+                try {
+                    val settings =
+                        supportedSensors.settingsList.first { it.sensorValidator(sensor) }
+                    filteredSensors.add(BtDevice(sensor.name, sensor.mac, settings.tag))
+                }
+                catch (_: NoSuchElementException) {
+
+                }
             }
         }
         return filteredSensors
@@ -154,6 +167,7 @@ class ScanViewModel: ViewModel() {
             service = "6672b3e6-477e-4e52-a3fb-a440c57dc857",
             characteristic = "1fe83b02-0788-4af7-9a69-af6b9e9782a7",
         )
+        deviceRepository.addDevice(sensor)
         val jsonString = Json.encodeToString(sensor)
         peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
@@ -180,7 +194,7 @@ class ScanViewModel: ViewModel() {
         }
     }
 
-    suspend fun checkStatus() {
+    suspend fun checkStatus(device: BtDevice) {
         val characteristic = characteristicOf(
             service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
             characteristic = "46dff0ae-21e2-4e55-8b38-3ae249e23884",
@@ -189,6 +203,7 @@ class ScanViewModel: ViewModel() {
         observation.collect{ data ->
             val progress: ProgressReport = Json.decodeFromString(data.decodeToString())
             val sensorState = SensorState.fromString(progress.state)
+            val sensorSettings = getSettings(device)
 
             measurementState.postValue(sensorState)
 
@@ -231,7 +246,7 @@ class ScanViewModel: ViewModel() {
         }
     }
 
-    suspend fun startStatus(mac: String) {
+    suspend fun startStatus(device: BtDevice) {
         val readCharacteristic = characteristicOf(
             service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
             characteristic = "e946c454-6083-44d1-a726-076cecfc3744"
@@ -241,9 +256,12 @@ class ScanViewModel: ViewModel() {
             characteristic = "2fd2ac39-1f6b-4d55-aa2b-3dd049420235"
         )
 
-        peripheral!!.write(writeCharacteristic, mac.toByteArray(Charsets.UTF_8))
+        peripheral!!.write(writeCharacteristic, device.mac.toByteArray(Charsets.UTF_8))
+
         val jsonData = peripheral!!.read(readCharacteristic).decodeToString()
         val decodedData = Json.decodeFromString<ProgressStatus>(jsonData)
+        val sensorSettings = getSettings(device)
+
         measurementState.postValue(SensorState.fromString(decodedData.state))
         label.postValue(decodedData.label)
         startTime.postValue(decodedData.startTime)
@@ -279,4 +297,11 @@ class ScanViewModel: ViewModel() {
         peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
 
+    fun getDevice(mac: String): BtDevice{
+        return deviceRepository.deviceList.first { it.mac == mac }
+    }
+
+    fun getSettings(device: BtDevice): SensorSettings{
+        return supportedSensors.fromTag(device.tag)
+    }
 }

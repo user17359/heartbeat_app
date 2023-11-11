@@ -2,10 +2,9 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
-import agh.ryszard.blazej.heartbeat_app.data.Measurement
-import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.SensorSettings
-import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.SensorToggleParameter
-import agh.ryszard.blazej.heartbeat_app.data.supportedSensors.MovesenseSettings
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.Measurement
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
+import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorToggleParameter
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimepickerTextField
@@ -61,13 +60,13 @@ enum class Timepicker {
 @ExperimentalMaterial3Api
 fun NewMeasurementScreen(navController: NavHostController,
                          scanViewModel: ScanViewModel,
-                         mac: String,
-                         name: String) {
+                         mac: String) {
 
     val coroutineScope = rememberCoroutineScope()
 
     // settings from current sensor
-    val sensorSettings: SensorSettings = MovesenseSettings()
+    val device = scanViewModel.getDevice(mac)
+    val sensorSettings: SensorSettings = scanViewModel.getSettings(device)
 
     // toggle state of sensor units eg. "ECG": false
     val unitsToggle = remember { mutableStateMapOf<String, Boolean>() }
@@ -104,7 +103,7 @@ fun NewMeasurementScreen(navController: NavHostController,
             if (showDialog.value) {
                 AlertDialogTemplate(
                     onDismissRequest = { showDialog.value = false },
-                    onConfirmation = { showDialog.value = false; onCancel(navController, mac, name) },
+                    onConfirmation = { showDialog.value = false; onCancel(navController, mac) },
                     dialogTitle = "Are you sure to cancel?",
                     dialogText = "All data will be lost"
                 )
@@ -302,7 +301,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                         }
                     }
                     coroutineScope.launch {
-                        onSave(navController, scanViewModel, name,
+                        onSave(navController, scanViewModel,
                             Measurement(
                                 mac,
                                 "movesense",
@@ -327,17 +326,16 @@ fun NewMeasurementScreen(navController: NavHostController,
     }
 }
 
-private fun onCancel(navController: NavHostController, mac: String, name: String) {
-    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac/$name")
+private fun onCancel(navController: NavHostController, mac: String) {
+    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac")
 }
 
 private suspend fun onSave(navController: NavHostController,
                            viewModel: ScanViewModel,
-                           name: String,
                            measurement: Measurement,
                            ) {
     //TODO: check if hours are valid
     //TODO: handle next day
     viewModel.addMeasurement(measurement)
-    navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/${measurement.mac}/${name}")
+    navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/${measurement.mac}")
 }

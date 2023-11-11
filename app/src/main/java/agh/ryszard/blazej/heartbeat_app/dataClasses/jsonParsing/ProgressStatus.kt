@@ -1,4 +1,4 @@
-package agh.ryszard.blazej.heartbeat_app.data
+package agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing
 
 import kotlinx.serialization.Serializable
 
