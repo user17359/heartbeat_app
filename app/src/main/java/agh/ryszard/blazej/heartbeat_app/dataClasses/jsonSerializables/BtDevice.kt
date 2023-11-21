@@ -1,4 +1,4 @@
-package agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing
+package agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables
 
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.TypeTag
 import kotlinx.serialization.Serializable

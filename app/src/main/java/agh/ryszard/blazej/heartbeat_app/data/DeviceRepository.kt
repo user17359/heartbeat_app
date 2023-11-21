@@ -1,6 +1,6 @@
 package agh.ryszard.blazej.heartbeat_app.data
 
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtDevice
 
 class DeviceRepository {
 

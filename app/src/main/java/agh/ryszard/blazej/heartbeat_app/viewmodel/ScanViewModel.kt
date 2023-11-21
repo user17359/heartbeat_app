@@ -1,11 +1,11 @@
 package agh.ryszard.blazej.heartbeat_app.viewmodel
 
 import agh.ryszard.blazej.heartbeat_app.data.DeviceRepository
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.BtDevice
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.DiaryEntry
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.Measurement
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.ProgressReport
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.ProgressStatus
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.DiaryEntry
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.Measurement
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.ProgressReport
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.ProgressStatus
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SupportedSensors
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorState

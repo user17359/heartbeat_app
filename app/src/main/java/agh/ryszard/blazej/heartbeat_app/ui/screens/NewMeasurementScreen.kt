@@ -2,7 +2,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonParsing.Measurement
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.Measurement
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorToggleParameter
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
@@ -304,7 +304,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                         onSave(navController, scanViewModel,
                             Measurement(
                                 mac,
-                                "movesense",
+                                sensorSettings.tag.encodedName,
                                 label,
                                 startTime.hour,
                                 startTime.minute,
@@ -334,6 +334,7 @@ private suspend fun onSave(navController: NavHostController,
                            viewModel: ScanViewModel,
                            measurement: Measurement,
                            ) {
+    //TODO: support delayed handle
     //TODO: check if hours are valid
     //TODO: handle next day
     viewModel.addMeasurement(measurement)
