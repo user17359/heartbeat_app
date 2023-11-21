@@ -18,10 +18,14 @@ import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -31,6 +35,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.juul.kable.AndroidAdvertisement
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -47,8 +52,13 @@ private val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 @Composable
 fun GatewaySelectionScreen(
     navController: NavHostController,
-    scanViewModel: ScanViewModel
+    scanViewModel: ScanViewModel,
 ) {
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val snackbar = scanViewModel.connectionFailure.observeAsState()
+
     val multiplePermissionsState = rememberMultiplePermissionsState(permissions)
     if(multiplePermissionsState.allPermissionsGranted) {
         LaunchedEffect(Unit) {
@@ -58,7 +68,12 @@ fun GatewaySelectionScreen(
         }
         val listOfDevices = scanViewModel.listOfDevices.observeAsState()
 
-        Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
+        Scaffold(
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        ) { innerPadding ->
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -97,6 +112,13 @@ fun GatewaySelectionScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
+                }
+            }
+        }
+        LaunchedEffect(Unit) {
+            if (snackbar.value!!) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Failed to connect")
                 }
             }
         }

@@ -35,10 +35,17 @@ fun GatewayLoadingScreen(
     scanViewModel: ScanViewModel
 ) {
     val connectionState = scanViewModel.connectionState.observeAsState()
+    val connectionFailure = scanViewModel.connectionFailure.observeAsState()
 
     LaunchedEffect(connectionState.value) {
         if(connectionState.value is State.Connected) {
             onLoadingEnd(navHostController)
+        }
+    }
+
+    LaunchedEffect(connectionFailure.value) {
+        if(connectionFailure.value!!) {
+            onFailure(navHostController)
         }
     }
 
@@ -82,4 +89,8 @@ fun GatewayLoadingScreen(
 
 private suspend fun onLoadingEnd(navController: NavHostController) = coroutineScope{
     navController.navigate(HeartbeatScreen.GatewayMenu.name)
+}
+
+private suspend fun onFailure(navController: NavHostController) = coroutineScope{
+    navController.navigate(HeartbeatScreen.GatewaySelection.name)
 }

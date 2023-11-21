@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.juul.kable.AndroidAdvertisement
+import com.juul.kable.ConnectionLostException
 import com.juul.kable.Filter
 import com.juul.kable.Peripheral
 import com.juul.kable.Scanner
@@ -28,6 +29,7 @@ import com.patrykandpatrick.vico.core.entry.entryOf
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
@@ -43,6 +45,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
 
     val listOfDevices = MutableLiveData<Set<AndroidAdvertisement>>()
     val connectionState = MutableLiveData<State>()
+    val connectionFailure = MutableLiveData(false)
     val reconnectState = MutableLiveData(false)
     val measurementState = MutableLiveData(SensorState.Empty)
     val chartEntryModelProducer = ChartEntryModelProducer()
@@ -54,6 +57,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
     private var _readings = mutableListOf<MutableList<FloatEntry>>()
     private var _plotReady = false
     private var _currentIndex = 0
+    private val _connectionTimeoutMilis: Long = 10000
     private var _units = listOf<String>()
     var peripheral: Peripheral? = null
 
@@ -88,14 +92,18 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
     }
 
     fun connectLePeripheral(advertisement: AndroidAdvertisement) {
+        connectionFailure.postValue(false)
         listOfDevices.value = setOf()
         _foundDevices.clear()
         val peripheral = _scope.peripheral(advertisement) {
 
         }
         this.peripheral = peripheral
-        _scope.launch {
+        val job = _scope.launch {
             asyncConnection()
+        }
+        _scope.launch {
+            timeout(_connectionTimeoutMilis, job)
         }
     }
 
@@ -107,10 +115,24 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
     }
 
     private suspend fun asyncConnection() {
-        peripheral!!.connect()
-        peripheral!!.state.collect { state ->
-            connectionState.postValue(state)
+        try {
+            var connected = false
+            while (!connected) {
+                peripheral!!.connect()
+                peripheral!!.state.collect { state ->
+                    connectionState.postValue(state)
+                    if (state is State.Connected) connected = true
+                }
+            }
         }
+        catch (e: ConnectionLostException){
+            connectionFailure.postValue(true)
+        }
+    }
+
+    private suspend fun timeout(timeMilis: Long, job: Job) {
+        delay(timeMilis)
+        job.cancelAndJoin()
     }
 
     private suspend fun asyncDisconnection() {
