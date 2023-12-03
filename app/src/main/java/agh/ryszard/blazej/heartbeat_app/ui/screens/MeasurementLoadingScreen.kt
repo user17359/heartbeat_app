@@ -42,7 +42,7 @@ fun MeasurementLoadingScreen(
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            scanViewModel.timedReconnect(7000)
+            scanViewModel.timedReconnect(5000)
         }
     }
 

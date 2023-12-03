@@ -53,7 +53,6 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
     val startTime = MutableLiveData("")
 
     private val _foundDevices = mutableListOf<String>()
-    private val _rememberedSensors = mutableSetOf<String>()
     private var _readings = mutableListOf<MutableList<FloatEntry>>()
     private var _plotReady = false
     private var _currentIndex = 0
@@ -103,7 +102,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
             asyncConnection()
         }
         _scope.launch {
-            timeout(_connectionTimeoutMilis, job)
+            //timeout(_connectionTimeoutMilis, job)
         }
     }
 
@@ -154,11 +153,13 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         sensors.forEach{ sensor ->
             supportedSensors.settingsList.forEach { sensorType ->
                 if(sensorType.sensorValidator(sensor)) {
-                    _rememberedSensors.add(sensor.mac)
+                    val settings =
+                        supportedSensors.settingsList.first { it.sensorValidator(sensor) }
+                    deviceRepository.addDevice(BtDevice(sensor.name, sensor.mac, settings.tag))
                 }
             }
         }
-        return sensors
+        return deviceRepository.deviceList
     }
 
     suspend fun findSensors(): List<BtDevice> {
@@ -170,7 +171,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         val sensors: List<BtDevice> = Json.decodeFromString(reading)
         val filteredSensors = mutableListOf<BtDevice>()
         sensors.forEach{ sensor ->
-            if(sensor.mac !in _rememberedSensors){
+            if(sensor !in deviceRepository.deviceList){
                 try {
                     val settings =
                         supportedSensors.settingsList.first { it.sensorValidator(sensor) }
@@ -199,7 +200,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
             service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
             characteristic = "18c7e933-73cf-4d47-9973-51a53f0fec4e",
         )
-        reconnectState.postValue(false)
+        //reconnectState.postValue(false)
         val jsonString = Json.encodeToString(measurement)
         peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
@@ -208,12 +209,11 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
     suspend fun timedReconnect(timeMilis: Long) {
         peripheral!!.disconnect()
         delay(timeMilis)
+        Log.d("miau", "reconnecting")
         reconnectState.postValue(true)
-        print(peripheral!!.state)
-        peripheral!!.connect()
-        peripheral!!.state.collect { state ->
-            connectionState.postValue(state)
-        }
+        Log.d("miau", peripheral!!.state.toString())
+        Log.d("miau", reconnectState.value.toString())
+        asyncConnection()
     }
 
     suspend fun checkStatus(device: BtDevice) {
@@ -242,7 +242,6 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
                         for (channel in 0..<channels) {
                             for (sample in 0..<samples) {
                                 // + 1 to account for timestamp, assuming its always first
-                                Log.d("miau", "current channel: $channel, current sample: $sample")
                                 _readings[channel].add(
                                     entryOf(
                                         _currentIndex,
@@ -252,13 +251,8 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
                                 _currentIndex++
                             }
                         }
-
-                        Log.d("miau", _readings.toString())
                         chartEntryModelProducer.setEntries(_readings)
                     }
-                }
-                else{
-                    Log.d("miau", progress.info)
                 }
             }
              else {
