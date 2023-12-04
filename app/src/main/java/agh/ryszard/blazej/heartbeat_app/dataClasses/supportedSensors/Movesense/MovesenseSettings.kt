@@ -12,25 +12,19 @@ data class MovesenseSettings (
             encodedName = "ecg",
             parameters = listOf(
                 SensorToggleParameter(
-                    name = "Probing frequency",
+                    name = "Probing frequency [Hz]",
                     encodedName = "probing",
                     options = listOf(
-                        "125Hz",
-                        "128Hz"
-                        // TODO: add all probing frequencies
+                        "125",
+                        "128",
+                        "200",
+                        "250",
+                        "256",
+                        "500",
+                        "512"
                     ),
                     uniqueId = 0
                 ),
-                SensorToggleParameter(
-                    name = "Low-pass filter",
-                    encodedName = "lowPass",
-                    options = listOf(
-                        "40Hz",
-                        "100Hz",
-                        "150Hz"
-                    ),
-                    uniqueId = 1
-                )
             ),
             dataParser = {data: String -> movesenseParser(data, "ecg") },
             dataChannels = 1,
@@ -40,7 +34,21 @@ data class MovesenseSettings (
             name = "Accelerometer",
             encodedName = "acc",
             parameters = listOf(
-                // TODO: add parameters
+                SensorToggleParameter(
+                    name = "Probing frequency [Hz]",
+                    encodedName = "probing",
+                    options = listOf(
+                        "13",
+                        "26",
+                        "52",
+                        "104",
+                        "208",
+                        "416",
+                        "833",
+                        "1666"
+                    ),
+                    uniqueId = 1
+                ),
             ),
             dataParser = {data: String -> movesenseParser(data, "acc") },
             dataChannels = 3,
@@ -50,7 +58,21 @@ data class MovesenseSettings (
             name = "Gyroscope",
             encodedName = "gyro",
             parameters = listOf(
-                // TODO: add parameters
+                SensorToggleParameter(
+                    name = "Probing frequency [Hz]",
+                    encodedName = "probing",
+                    options = listOf(
+                        "13",
+                        "26",
+                        "52",
+                        "104",
+                        "208",
+                        "416",
+                        "833",
+                        "1666"
+                    ),
+                    uniqueId = 2
+                ),
             ),
             dataParser = {data: String -> movesenseParser(data, "gyro") },
             dataChannels = 3,
@@ -60,10 +82,33 @@ data class MovesenseSettings (
             name = "Magnetometer",
             encodedName = "mag",
             parameters = listOf(
-                // TODO: add parameters
+                SensorToggleParameter(
+                    name = "Probing frequency [Hz]",
+                    encodedName = "probing",
+                    options = listOf(
+                        "13",
+                        "26",
+                        "52",
+                        "104",
+                        "208",
+                        "416",
+                        "833",
+                        "1666"
+                    ),
+                    uniqueId = 3
+                ),
             ),
             dataParser = {data: String -> movesenseParser(data, "mag") },
             dataChannels = 3,
+            dataSamples = 1
+        ),
+        SensorUnit(
+            name = "Heart rate",
+            encodedName = "hr",
+            parameters = listOf(
+            ),
+            dataParser = {data: String -> movesenseParser(data, "hr") },
+            dataChannels = 1,
             dataSamples = 1
         )
     ),

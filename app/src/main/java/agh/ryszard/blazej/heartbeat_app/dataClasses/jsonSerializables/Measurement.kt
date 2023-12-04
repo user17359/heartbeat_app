@@ -12,4 +12,6 @@ data class Measurement (
     val endHour: Int,
     val endMinute: Int,
     val sensors: List<HashMap<String, String>>,
+    val nextDayStart: Boolean,
+    val nextDayEnd: Boolean,
 )

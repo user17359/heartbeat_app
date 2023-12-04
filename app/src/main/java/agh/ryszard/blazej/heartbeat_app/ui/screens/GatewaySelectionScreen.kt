@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -103,14 +104,20 @@ fun GatewaySelectionScreen(
                         text = "Select gateway to connect",
                         style = MaterialTheme.typography.titleLarge
                     )
-                    listOfDevices.value?.forEach { gateway ->
-                        BtDeviceCard(
-                            icon = Icons.Rounded.FavoriteBorder,
-                            name = gateway.name ?: "null",
-                            macAddress = gateway.address,
-                            onClick = { onDeviceClick(navController, gateway, scanViewModel) }
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+                    if(listOfDevices.value?.isNotEmpty() == true) {
+                        listOfDevices.value?.forEach { gateway ->
+                            BtDeviceCard(
+                                icon = Icons.Rounded.FavoriteBorder,
+                                name = gateway.name ?: "null",
+                                macAddress = gateway.address,
+                                onClick = { onDeviceClick(navController, gateway, scanViewModel) }
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                    else
+                    {
+                        CircularProgressIndicator()
                     }
                 }
             }

@@ -35,6 +35,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.LocalDateTime
 
 // Time after we stop scanning
 //private const val SCAN_PERIOD: Long = 60000
@@ -148,6 +149,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
             service = "6672b3e6-477e-4e52-a3fb-a440c57dc857",
             characteristic = "9f03f5db-93ba-402b-951f-1c8e008b5adc",
         )
+
         val reading = peripheral!!.read(characteristic).decodeToString()
         val sensors: List<BtDevice> = Json.decodeFromString(reading)
         sensors.forEach{ sensor ->
@@ -155,7 +157,10 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
                 if(sensorType.sensorValidator(sensor)) {
                     val settings =
                         supportedSensors.settingsList.first { it.sensorValidator(sensor) }
-                    deviceRepository.addDevice(BtDevice(sensor.name, sensor.mac, settings.tag))
+                    val device = BtDevice(sensor.name, sensor.mac, settings.tag)
+                    if(!deviceRepository.checkExistence(device)){
+                        deviceRepository.addDevice(device)
+                    }
                 }
             }
         }
@@ -171,7 +176,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         val sensors: List<BtDevice> = Json.decodeFromString(reading)
         val filteredSensors = mutableListOf<BtDevice>()
         sensors.forEach{ sensor ->
-            if(sensor !in deviceRepository.deviceList){
+            if(!deviceRepository.deviceList.any { it.mac == sensor.mac }){
                 try {
                     val settings =
                         supportedSensors.settingsList.first { it.sensorValidator(sensor) }
@@ -195,24 +200,68 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
 
-    suspend fun addMeasurement(measurement: Measurement) {
+    suspend fun addMeasurement(measurement: Measurement, delayed: Boolean): Boolean{
         val characteristic = characteristicOf(
             service = "a56f5e06-fd24-4ffe-906f-f82e916262bc",
             characteristic = "18c7e933-73cf-4d47-9973-51a53f0fec4e",
         )
         //reconnectState.postValue(false)
-        val jsonString = Json.encodeToString(measurement)
+
+        var correctedStartHour = measurement.startHour
+        var correctedStartMinute = measurement.startMinute
+
+        val current = LocalDateTime.now()
+
+        var correctedStart = false
+        var correctedEnd = false
+
+        // handling delayed
+        if(!delayed){
+            correctedStartHour = 0
+            correctedStartMinute = 0
+        }
+        // handling next day
+        else{
+            if(current.hour > measurement.startHour || (current.hour == measurement.startHour && current.minute > measurement.startMinute)){
+                correctedStart = true
+                correctedEnd = true
+            }
+        }
+        if(current.hour > measurement.endHour || (current.hour == measurement.endHour && current.minute > measurement.endMinute)){
+            correctedEnd = true
+        }
+
+        if(!(correctedStart xor correctedEnd)) {
+            if(measurement.endHour < measurement.startHour || (measurement.endHour == measurement.startHour && measurement.endMinute < measurement.startMinute)){
+                return false
+            }
+        }
+
+        val correctedMeasurement = Measurement(
+            measurement.mac,
+            measurement.type,
+            measurement.label,
+            correctedStartHour,
+            correctedStartMinute,
+            measurement.endHour,
+            measurement.endMinute,
+            measurement.sensors,
+            correctedStart,
+            correctedEnd
+        )
+
+        Log.d("miau", correctedMeasurement.toString())
+
+        val jsonString = Json.encodeToString(correctedMeasurement)
         peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
+        return true
     }
     
     // for multi-connection workaround
     suspend fun timedReconnect(timeMilis: Long) {
         peripheral!!.disconnect()
         delay(timeMilis)
-        Log.d("miau", "reconnecting")
         reconnectState.postValue(true)
-        Log.d("miau", peripheral!!.state.toString())
-        Log.d("miau", reconnectState.value.toString())
         asyncConnection()
     }
 

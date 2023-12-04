@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
@@ -123,7 +125,8 @@ fun NewMeasurementScreen(navController: NavHostController,
             }
             Column(
                 modifier = Modifier
-                    .padding(36.dp, 18.dp, 36.dp, 12.dp)
+                    .padding(36.dp, 18.dp, 36.dp, 70.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Row(
                     modifier = Modifier
@@ -310,8 +313,10 @@ fun NewMeasurementScreen(navController: NavHostController,
                                 startTime.minute,
                                 endTime.hour,
                                 endTime.minute,
-                                chosenUnits.toList()
-                            )
+                                chosenUnits.toList(),
+                                nextDayStart = false,
+                                nextDayEnd = false
+                            ), delayed.value
                         )
                     }
                 },
@@ -333,10 +338,7 @@ private fun onCancel(navController: NavHostController, mac: String) {
 private suspend fun onSave(navController: NavHostController,
                            viewModel: ScanViewModel,
                            measurement: Measurement,
-                           ) {
-    //TODO: support delayed handle
-    //TODO: check if hours are valid
-    //TODO: handle next day
-    viewModel.addMeasurement(measurement)
+                           delayed: Boolean) {
+    viewModel.addMeasurement(measurement, delayed)
     navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/${measurement.mac}")
 }
