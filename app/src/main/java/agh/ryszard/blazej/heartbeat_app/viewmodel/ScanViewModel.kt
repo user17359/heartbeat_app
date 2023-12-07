@@ -58,7 +58,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
     private var _plotReady = false
     private var _currentIndex = 0
     private val _connectionTimeoutMilis: Long = 10000
-    private var _units = listOf<String>()
+    private var _units = listOf<HashMap<String, String>>()
     var peripheral: Peripheral? = null
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler{ _, throwable ->
@@ -278,7 +278,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
 
             measurementState.postValue(sensorState)
 
-            val measuringUnit = sensorSettings.units.first { it.encodedName == _units[0] }
+            val measuringUnit = sensorSettings.units.first { it.encodedName == _units[0]["name"] }
 
             if(sensorState == SensorState.Measuring) {
                 val results = measuringUnit.dataParser(progress.info)
@@ -333,7 +333,7 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         _units = decodedData.units
 
         if(_units.isNotEmpty()) {
-            val measuringUnit = sensorSettings.units.first { it.encodedName == _units[0] }
+            val measuringUnit = sensorSettings.units.first { it.encodedName == _units[0]["name"] }
 
             val newReadings = (mutableListOf<MutableList<FloatEntry>>())
             for (i in 0..<measuringUnit.dataChannels) {

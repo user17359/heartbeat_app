@@ -1,10 +1,13 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
-import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.ui.elements.CornerDecoration
+import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +33,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -38,6 +43,7 @@ import com.juul.kable.AndroidAdvertisement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 private val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
     listOf(
@@ -60,8 +66,13 @@ fun GatewaySelectionScreen(
 
     val snackbar = scanViewModel.connectionFailure.observeAsState()
 
+    val context = LocalContext.current
+    val bluetoothManager: BluetoothManager? = getSystemService(context, BluetoothManager::class.java)
+    val bluetoothAdapter: BluetoothAdapter? = bluetoothManager!!.adapter
+
+
     val multiplePermissionsState = rememberMultiplePermissionsState(permissions)
-    if(multiplePermissionsState.allPermissionsGranted) {
+    if(bluetoothAdapter!= null && bluetoothAdapter.isEnabled && multiplePermissionsState.allPermissionsGranted) {
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
                 scanViewModel.scanLeDevice()
@@ -130,6 +141,58 @@ fun GatewaySelectionScreen(
             }
         }
     }
+    else if(bluetoothAdapter == null){
+        Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                )
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .rotate(180.0f)
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(text = "Your device does not support bluetooth")
+            }
+        }
+    }
+    else if(!bluetoothAdapter.isEnabled){
+        Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                )
+                CornerDecoration(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .rotate(180.0f)
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(text = "Turn on your bluetooth and restart app")
+            }
+        }
+    }
     else {
         Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
             Box(
@@ -152,6 +215,7 @@ fun GatewaySelectionScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    Text(text = "Permissions are not granted")
                     Button(onClick = { multiplePermissionsState.launchMultiplePermissionRequest() }) {
                         Text("Request permissions")
                     }

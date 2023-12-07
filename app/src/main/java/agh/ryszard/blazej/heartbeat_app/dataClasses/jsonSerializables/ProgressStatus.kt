@@ -7,5 +7,5 @@ data class ProgressStatus (
     val state: String,
     val label: String,
     val startTime: String,
-    val units: List<String>
+    val units: List<HashMap<String, String>>
 )
