@@ -7,7 +7,6 @@ import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -120,7 +119,7 @@ fun GatewaySelectionScreen(
                             BtDeviceCard(
                                 icon = Icons.Rounded.FavoriteBorder,
                                 name = gateway.name ?: "null",
-                                macAddress = gateway.address,
+                                extraInfo = "MAC: ${gateway.address}",
                                 onClick = { onDeviceClick(navController, gateway, scanViewModel) }
                             )
                             Spacer(modifier = Modifier.height(16.dp))

@@ -22,10 +22,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun BtDeviceCard(icon: Painter, name: String, macAddress: String, onClick: () -> Unit){
+fun BtDeviceCard(icon: Painter, name: String, extraInfo: String, onClick: () -> Unit){
     OutlinedCard (
         colors = CardDefaults.cardColors(
-            containerColor = if(macAddress != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
+            containerColor = if(extraInfo != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
@@ -55,9 +55,9 @@ fun BtDeviceCard(icon: Painter, name: String, macAddress: String, onClick: () ->
                         .padding(bottom = 2.dp),
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                if(macAddress != "") {
+                if(extraInfo != "") {
                     Text(
-                        text = "MAC: $macAddress",
+                        text = extraInfo,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -68,10 +68,10 @@ fun BtDeviceCard(icon: Painter, name: String, macAddress: String, onClick: () ->
 }
 
 @Composable
-fun BtDeviceCard(icon: ImageVector, name: String, macAddress: String, onClick: () -> Unit){
+fun BtDeviceCard(icon: ImageVector, name: String, extraInfo: String, onClick: () -> Unit){
     OutlinedCard (
         colors = CardDefaults.cardColors(
-            containerColor = if(macAddress != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
+            containerColor = if(extraInfo != "") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
@@ -101,9 +101,9 @@ fun BtDeviceCard(icon: ImageVector, name: String, macAddress: String, onClick: (
                         .padding(bottom = 2.dp),
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                if(macAddress != "") {
+                if(extraInfo != "") {
                     Text(
-                        text = "MAC: $macAddress",
+                        text = extraInfo,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

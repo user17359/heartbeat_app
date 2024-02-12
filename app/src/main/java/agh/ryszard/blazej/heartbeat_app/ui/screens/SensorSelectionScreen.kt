@@ -1,7 +1,7 @@
 package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtSensor
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.ui.elements.CornerDecoration
 import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
@@ -38,7 +38,7 @@ fun SensorSelectionScreen(
     scanViewModel: ScanViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var foundSensors by remember { mutableStateOf(listOf<BtDevice>()) }
+    var foundSensors by remember { mutableStateOf(listOf<BtSensor>()) }
 
     LaunchedEffect(Unit) {
         foundSensors = scanViewModel.findSensors()
@@ -78,7 +78,7 @@ fun SensorSelectionScreen(
                         BtDeviceCard(
                             icon = Icons.Rounded.FavoriteBorder,
                             name = sensor.name,
-                            macAddress = sensor.mac,
+                            extraInfo = "MAC: ${sensor.mac}",
                             onClick = {
                                 coroutineScope.launch {
                                     onDeviceClick(navController, sensor, scanViewModel)
@@ -96,7 +96,7 @@ fun SensorSelectionScreen(
     }
 }
 
-private suspend fun onDeviceClick(navController: NavHostController, btDevice: BtDevice, viewModel: ScanViewModel) {
+private suspend fun onDeviceClick(navController: NavHostController, btDevice: BtSensor, viewModel: ScanViewModel) {
     viewModel.addSensor(btDevice)
     navController.navigate(HeartbeatScreen.SensorLoading.name)
 }

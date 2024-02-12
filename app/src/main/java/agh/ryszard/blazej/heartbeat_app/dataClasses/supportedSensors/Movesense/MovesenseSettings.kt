@@ -1,5 +1,6 @@
 package agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.Movesense
 
+import agh.ryszard.blazej.heartbeat_app.R
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.TypeTag
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorToggleParameter
@@ -15,13 +16,13 @@ data class MovesenseSettings (
                     name = "Probing frequency [Hz]",
                     encodedName = "probing",
                     options = listOf(
-                        "125",
-                        "128",
-                        "200",
-                        "250",
-                        "256",
-                        "500",
-                        "512"
+                        "125"
+                        //"128",
+                        //"200",
+                        //"250",
+                        //"256",
+                        //"500",
+                        //"512"
                     ),
                     uniqueId = 0
                 ),
@@ -108,9 +109,9 @@ data class MovesenseSettings (
             parameters = listOf(
             ),
             dataParser = {data: String -> movesenseParser(data, "hr") },
-            dataChannels = 1,
+            dataChannels = 2,
             dataSamples = 1
         )
     ),
     override val tag: TypeTag
-) : SensorSettings(units, tag, ::movesenseValidator)
+) : SensorSettings(units, tag, ::movesenseValidator, R.drawable.ecg_heart_24px)

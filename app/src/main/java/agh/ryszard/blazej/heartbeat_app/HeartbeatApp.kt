@@ -7,7 +7,6 @@ import agh.ryszard.blazej.heartbeat_app.ui.screens.GatewaySelectionScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.MeasurementLoadingScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.NewMeasurementScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorLoadingScreen
-import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorMenuScreen
 import agh.ryszard.blazej.heartbeat_app.ui.screens.SensorSelectionScreen
 import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,10 +52,6 @@ fun HeartbeatApp(
         }
         composable(HeartbeatScreen.SensorLoading.name) {
             SensorLoadingScreen(navController)
-        }
-        composable(HeartbeatScreen.SensorMenu.name + "/{mac}") {
-            val mac = it.arguments?.getString("mac")
-            SensorMenuScreen(navController, viewModel, mac ?: "")
         }
         composable(HeartbeatScreen.DiaryEntry.name) {
             DiaryEntryScreen(navController, viewModel)

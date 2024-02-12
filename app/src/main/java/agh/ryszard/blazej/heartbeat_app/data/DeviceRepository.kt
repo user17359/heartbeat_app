@@ -1,16 +1,16 @@
 package agh.ryszard.blazej.heartbeat_app.data
 
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtSensor
 
 class DeviceRepository {
 
-    val deviceList = mutableListOf<BtDevice>()
+    val deviceList = mutableListOf<BtSensor>()
 
-    fun addDevice(device: BtDevice) {
+    fun addDevice(device: BtSensor) {
         deviceList.add(device)
     }
 
-    fun checkExistence(device: BtDevice): Boolean {
+    fun checkExistence(device: BtSensor): Boolean {
         return deviceList.any {it.mac == device.mac}
     }
 }

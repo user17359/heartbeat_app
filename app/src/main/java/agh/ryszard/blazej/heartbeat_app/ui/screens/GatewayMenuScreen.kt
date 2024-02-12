@@ -2,7 +2,7 @@ package agh.ryszard.blazej.heartbeat_app.ui.screens
 
 import agh.ryszard.blazej.heartbeat_app.HeartbeatScreen
 import agh.ryszard.blazej.heartbeat_app.R
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtSensor
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.BtDeviceCard
 import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
@@ -47,7 +47,7 @@ fun GatewayMenuScreen(
     scanViewModel: ScanViewModel
 ) {
     val connectionState = scanViewModel.connectionState.observeAsState()
-    var rememberedSensors by remember { mutableStateOf(listOf<BtDevice>()) }
+    var rememberedSensors by remember { mutableStateOf(listOf<BtSensor>()) }
 
     LaunchedEffect(connectionState.value) {
         if(connectionState.value is State.Disconnected) {
@@ -105,10 +105,11 @@ fun GatewayMenuScreen(
                         .padding(top = 12.dp, bottom = 12.dp),
                 )
                 rememberedSensors.forEach { sensor ->
+                    val settings = scanViewModel.getSettings(sensor)
                     BtDeviceCard(
-                        icon = painterResource(R.drawable.ecg_heart_24px),
+                        icon = painterResource(settings.icon),
                         name = sensor.name,
-                        macAddress = sensor.mac,
+                        extraInfo = sensor.details,
                         onClick = { onSensorClick(navController, sensor.mac) }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -143,7 +144,7 @@ private fun onDisconnect(scanViewModel: ScanViewModel) {
     scanViewModel.disconnectLePeripheral()
 }
 private fun onSensorClick(navController: NavHostController, mac: String) {
-    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac")
+    navController.navigate("${HeartbeatScreen.NewMeasurement.name}/$mac")
 }
 private fun onAddEvent(navController: NavHostController) {
     navController.navigate(HeartbeatScreen.DiaryEntry.name)

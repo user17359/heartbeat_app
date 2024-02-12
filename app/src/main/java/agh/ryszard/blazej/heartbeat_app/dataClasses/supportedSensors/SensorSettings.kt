@@ -1,6 +1,6 @@
 package agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors
 
-import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtDevice
+import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.BtSensor
 
 enum class ParameterType {
     Toggle
@@ -8,9 +8,11 @@ enum class ParameterType {
 open class SensorSettings (
     open val units: List<SensorUnit>,
     open val tag: TypeTag,
-    val sensorValidator: (BtDevice) -> Boolean
+    val sensorValidator: (BtSensor) -> Boolean,
+    val icon: Int
 )
 
+// TODO: clean up visualization parameters
 class SensorUnit (
     val name: String,
     val encodedName: String,
