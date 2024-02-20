@@ -6,8 +6,9 @@ import agh.ryszard.blazej.heartbeat_app.dataClasses.jsonSerializables.Measuremen
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSettings
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorToggleParameter
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
+import agh.ryszard.blazej.heartbeat_app.ui.elements.DateAndTime
+import agh.ryszard.blazej.heartbeat_app.ui.elements.DatePickerDialog
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
-import agh.ryszard.blazej.heartbeat_app.ui.elements.TimepickerTextField
 import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -33,8 +35,8 @@ import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -48,13 +50,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 
-enum class Timepicker {
+enum class DialogOptions {
     Start,
     End,
     None
@@ -90,13 +90,22 @@ fun NewMeasurementScreen(navController: NavHostController,
     }
 
     var label by remember { mutableStateOf("") }
+
     val startTime = rememberTimePickerState(is24Hour = true)
+    val startDate = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+
     val endTime = rememberTimePickerState(is24Hour = true)
-    val showTimePicker = remember { mutableStateOf(Timepicker.None) }
+    val endDate = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+
+    val showTimePicker = remember { mutableStateOf(DialogOptions.None) }
+    val showDatePicker = remember { mutableStateOf(DialogOptions.None) }
+
     val isStartTimeSelected = remember { mutableStateOf(false) }
     val isEndTimeSelected = remember { mutableStateOf(false) }
+    val isStartDateSelected = remember { mutableStateOf(false) }
+    val isEndDateSelected = remember { mutableStateOf(false) }
+
     val showDialog = remember { mutableStateOf(false) }
-    val delayed = remember { mutableStateOf(true) }
 
     Scaffold(containerColor = MaterialTheme.colorScheme.surface) { innerPadding ->
         Box(
@@ -112,17 +121,30 @@ fun NewMeasurementScreen(navController: NavHostController,
                     dialogText = "All data will be lost"
                 )
             }
-            if (showTimePicker.value != Timepicker.None) {
+            if (showTimePicker.value != DialogOptions.None) {
                 TimePickerDialog(
                     onDismiss =
                     {
-                        if(showTimePicker.value == Timepicker.Start)
+                        if(showTimePicker.value == DialogOptions.Start)
                             isStartTimeSelected.value = true
                         else
                             isEndTimeSelected.value = true
-                        showTimePicker.value = Timepicker.None
+                        showTimePicker.value = DialogOptions.None
                     },
-                    timePickerState = if(showTimePicker.value == Timepicker.Start) startTime else endTime
+                    timePickerState = if(showTimePicker.value == DialogOptions.Start) startTime else endTime
+                )
+            }
+            if (showDatePicker.value != DialogOptions.None) {
+                DatePickerDialog(
+                    onDismiss =
+                    {
+                        if(showTimePicker.value == DialogOptions.Start)
+                            isStartDateSelected.value = true
+                        else
+                            isEndDateSelected.value = true
+                        showTimePicker.value = DialogOptions.None
+                    },
+                    datePickerState = if(showDatePicker.value == DialogOptions.Start) startDate else endDate
                 )
             }
             Column(
@@ -168,54 +190,29 @@ fun NewMeasurementScreen(navController: NavHostController,
                         .fillMaxWidth()
                         .padding(bottom = 8.dp)
                 )
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Text(
-                        text = "Delayed",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Switch(
-                        checked = delayed.value,
-                        onCheckedChange = {
-                            delayed.value = it
-                        }
-                    )
-                }
-                if(delayed.value) {
-                    TimepickerTextField(
-                        onClick = { showTimePicker.value = Timepicker.Start },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        isTimeSelected = isStartTimeSelected.value,
-                        leadingIcon = @Composable {
-                            Icon(
-                                painterResource(R.drawable.schedule_24px),
-                                contentDescription = "Clock"
-                            )
-                        },
-                        time = startTime,
-                        label = "Start time"
-                    )
-                }
-                TimepickerTextField(
-                    onClick = { showTimePicker.value = Timepicker.End },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = if (delayed.value) 8.dp else 0.dp),
-                    isTimeSelected = isEndTimeSelected.value,
-                    leadingIcon = @Composable {
-                        Icon(
-                            painterResource(R.drawable.schedule_24px),
-                            contentDescription = "Clock"
-                        )
-                    },
-                    time = endTime,
-                    label = "End time"
+
+                // Start date and time
+                DateAndTime(
+                    time = startTime,
+                    onClickTime = { showTimePicker.value = DialogOptions.Start },
+                    isTimeSelected = isStartTimeSelected.value,
+                    date = startDate,
+                    onClickDate = { showDatePicker.value = DialogOptions.Start },
+                    isDateSelected = isStartDateSelected.value,
+                    labelPrefix = "Start"
                 )
+
+                // End date and time
+                DateAndTime(
+                    time = startTime,
+                    onClickTime = { showTimePicker.value = DialogOptions.End },
+                    isTimeSelected = isEndTimeSelected.value,
+                    date = startDate,
+                    onClickDate = { showDatePicker.value = DialogOptions.End },
+                    isDateSelected = isEndDateSelected.value,
+                    labelPrefix = "End"
+                )
+
                 Text(
                     text = "Sensor settings",
                     style = MaterialTheme.typography.bodyLarge,
@@ -305,20 +302,18 @@ fun NewMeasurementScreen(navController: NavHostController,
                             chosenUnits.last()["name"] = lastUnit.encodedName
                         }
                     }
+                    val startMilliseconds = startDate.selectedDateMillis!! + (startTime.hour * 60 + startTime.minute) * 60000
+                    val endMilliseconds = endDate.selectedDateMillis!! + (endTime.hour * 60 + endTime.minute) * 60000
                     coroutineScope.launch {
                         onSave(navController, scanViewModel,
                             Measurement(
                                 mac,
                                 sensorSettings.tag.encodedName,
                                 label,
-                                startTime.hour,
-                                startTime.minute,
-                                endTime.hour,
-                                endTime.minute,
+                                startMilliseconds,
+                                endMilliseconds,
                                 chosenUnits.toList(),
-                                nextDayStart = false,
-                                nextDayEnd = false
-                            ), delayed.value
+                            ),
                         )
                     }
                 },
@@ -339,8 +334,7 @@ private fun onCancel(navController: NavHostController, mac: String) {
 
 private suspend fun onSave(navController: NavHostController,
                            viewModel: ScanViewModel,
-                           measurement: Measurement,
-                           delayed: Boolean) {
-    viewModel.addMeasurement(measurement, delayed)
+                           measurement: Measurement) {
+    viewModel.addMeasurement(measurement)
     navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/${measurement.mac}")
 }

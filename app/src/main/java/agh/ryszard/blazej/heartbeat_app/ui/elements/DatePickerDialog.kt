@@ -8,22 +8,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-
 @Composable
 @ExperimentalMaterial3Api
-fun TimePickerDialog(onDismiss: () -> Unit, timePickerState: TimePickerState){
+fun DatePickerDialog(onDismiss: () -> Unit, datePickerState: DatePickerState){
     AlertDialog(
         modifier = Modifier
             .fillMaxWidth()
@@ -43,7 +42,7 @@ fun TimePickerDialog(onDismiss: () -> Unit, timePickerState: TimePickerState){
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // time picker
-            TimePicker(state = timePickerState)
+            DatePicker(state = datePickerState)
 
             // buttons
             Row(

@@ -28,7 +28,6 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.time.LocalDateTime
 
 // Time after we stop scanning
 //private const val SCAN_PERIOD: Long = 60000
@@ -187,54 +186,19 @@ class ScanViewModel(private val deviceRepository: DeviceRepository = DeviceRepos
         peripheral!!.write(characteristic, jsonString.toByteArray(Charsets.UTF_8))
     }
 
-    suspend fun addMeasurement(measurement: Measurement, delayed: Boolean): Boolean{
+    suspend fun addMeasurement(measurement: Measurement): Boolean{
         val characteristic = characteristicOf(
             service = sensorServiceUUID,
             characteristic = "18c7e933-73cf-4d47-9973-51a53f0fec4e",
         )
-        //reconnectState.postValue(false)
-
-        var correctedStartHour = measurement.startHour
-        var correctedStartMinute = measurement.startMinute
-
-        val current = LocalDateTime.now()
-
-        var correctedStart = false
-        var correctedEnd = false
-
-        // handling delayed
-        if(!delayed){
-            correctedStartHour = 0
-            correctedStartMinute = 0
-        }
-        // handling next day
-        else{
-            if(current.hour > measurement.startHour || (current.hour == measurement.startHour && current.minute > measurement.startMinute)){
-                correctedStart = true
-                correctedEnd = true
-            }
-        }
-        if(current.hour > measurement.endHour || (current.hour == measurement.endHour && current.minute > measurement.endMinute)){
-            correctedEnd = true
-        }
-
-        if(!(correctedStart xor correctedEnd)) {
-            if(measurement.endHour < measurement.startHour || (measurement.endHour == measurement.startHour && measurement.endMinute < measurement.startMinute)){
-                return false
-            }
-        }
 
         val correctedMeasurement = Measurement(
             measurement.mac,
             measurement.type,
             measurement.label,
-            correctedStartHour,
-            correctedStartMinute,
-            measurement.endHour,
-            measurement.endMinute,
+            measurement.startMilliseconds,
+            measurement.endMilliseconds,
             measurement.sensors,
-            correctedStart,
-            correctedEnd
         )
 
         val jsonString = Json.encodeToString(correctedMeasurement)
