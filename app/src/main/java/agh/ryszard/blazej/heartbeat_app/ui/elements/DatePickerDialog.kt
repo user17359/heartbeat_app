@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 @ExperimentalMaterial3Api
 fun DatePickerDialog(onDismiss: () -> Unit, datePickerState: DatePickerState){
-    AlertDialog(
+    BasicAlertDialog(
         modifier = Modifier
             .fillMaxWidth()
             .background(
@@ -41,7 +41,7 @@ fun DatePickerDialog(onDismiss: () -> Unit, datePickerState: DatePickerState){
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // time picker
+            // date picker
             DatePicker(state = datePickerState)
 
             // buttons
