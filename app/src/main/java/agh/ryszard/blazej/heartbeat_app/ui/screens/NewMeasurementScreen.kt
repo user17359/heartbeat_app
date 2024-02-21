@@ -7,7 +7,7 @@ import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorSetti
 import agh.ryszard.blazej.heartbeat_app.dataClasses.supportedSensors.SensorToggleParameter
 import agh.ryszard.blazej.heartbeat_app.ui.elements.AlertDialogTemplate
 import agh.ryszard.blazej.heartbeat_app.ui.elements.DateAndTime
-import agh.ryszard.blazej.heartbeat_app.ui.elements.DatePickerDialog
+import agh.ryszard.blazej.heartbeat_app.ui.elements.DatePickerDialogWrapped
 import agh.ryszard.blazej.heartbeat_app.ui.elements.TimePickerDialog
 import agh.ryszard.blazej.heartbeat_app.viewmodel.ScanViewModel
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import java.util.TimeZone
 
 enum class DialogOptions {
     Start,
@@ -135,21 +136,21 @@ fun NewMeasurementScreen(navController: NavHostController,
                 )
             }
             if (showDatePicker.value != DialogOptions.None) {
-                DatePickerDialog(
+                DatePickerDialogWrapped(
                     onDismiss =
                     {
-                        if(showTimePicker.value == DialogOptions.Start)
+                        if(showDatePicker.value == DialogOptions.Start)
                             isStartDateSelected.value = true
                         else
                             isEndDateSelected.value = true
-                        showTimePicker.value = DialogOptions.None
+                        showDatePicker.value = DialogOptions.None
                     },
                     datePickerState = if(showDatePicker.value == DialogOptions.Start) startDate else endDate
                 )
             }
             Column(
                 modifier = Modifier
-                    .padding(36.dp, 18.dp, 36.dp, 70.dp)
+                    .padding(16.dp, 16.dp, 16.dp, 70.dp)
                     .verticalScroll(rememberScrollState())
             ) {
                 Row(
@@ -204,10 +205,10 @@ fun NewMeasurementScreen(navController: NavHostController,
 
                 // End date and time
                 DateAndTime(
-                    time = startTime,
+                    time = endTime,
                     onClickTime = { showTimePicker.value = DialogOptions.End },
                     isTimeSelected = isEndTimeSelected.value,
-                    date = startDate,
+                    date = endDate,
                     onClickDate = { showDatePicker.value = DialogOptions.End },
                     isDateSelected = isEndDateSelected.value,
                     labelPrefix = "End"
@@ -302,10 +303,13 @@ fun NewMeasurementScreen(navController: NavHostController,
                             chosenUnits.last()["name"] = lastUnit.encodedName
                         }
                     }
-                    val startMilliseconds = startDate.selectedDateMillis!! + (startTime.hour * 60 + startTime.minute) * 60000
-                    val endMilliseconds = endDate.selectedDateMillis!! + (endTime.hour * 60 + endTime.minute) * 60000
+                    val mTimeZone: TimeZone = TimeZone.getDefault()
+                    val mGMTOffset: Int = mTimeZone.rawOffset
+                    val startMilliseconds = startDate.selectedDateMillis!! + (startTime.hour * 60 + startTime.minute) * 60000 - mGMTOffset
+                    val endMilliseconds = endDate.selectedDateMillis!! + (endTime.hour * 60 + endTime.minute) * 60000 - mGMTOffset
                     coroutineScope.launch {
-                        onSave(navController, scanViewModel,
+                        onSave(
+                            navController, scanViewModel,
                             Measurement(
                                 mac,
                                 sensorSettings.tag.encodedName,
@@ -329,7 +333,7 @@ fun NewMeasurementScreen(navController: NavHostController,
 }
 
 private fun onCancel(navController: NavHostController, mac: String) {
-    navController.navigate("${HeartbeatScreen.SensorMenu.name}/$mac")
+    navController.navigate("${HeartbeatScreen.MeasurementLoading.name}/$mac")
 }
 
 private suspend fun onSave(navController: NavHostController,

@@ -24,7 +24,6 @@ enum class HeartbeatScreen {
     SensorSelection,
     SensorLoading,
     DiaryEntry,
-    SensorMenu,
     NewMeasurement,
     MeasurementLoading
 }

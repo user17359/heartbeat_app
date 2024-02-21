@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -97,7 +97,7 @@ fun GatewayMenuScreen(
                         Icon(Icons.Rounded.Close, contentDescription = "X mark")
                     }
                 }
-                Divider()
+                HorizontalDivider()
                 Text(
                     text = "Remembered sensors",
                     style = MaterialTheme.typography.titleMedium,
