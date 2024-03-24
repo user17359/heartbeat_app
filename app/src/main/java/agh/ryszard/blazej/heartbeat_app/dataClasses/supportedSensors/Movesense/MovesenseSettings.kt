@@ -16,101 +16,40 @@ data class MovesenseSettings (
                     name = "Probing frequency [Hz]",
                     encodedName = "probing",
                     options = listOf(
-                        "125"
-                        //"128",
+                        "100",
+                        "125",
                         //"200",
-                        //"250",
+                        "250",
                         //"256",
-                        //"500",
+                        "500",
                         //"512"
                     ),
                     uniqueId = 0
                 ),
-            ),
-            dataParser = {data: String -> movesenseParser(data, "ecg") },
-            dataChannels = 1,
-            dataSamples = 16
+            )
         ),
         SensorUnit(
-            name = "Accelerometer",
-            encodedName = "acc",
+            name = "IMU",
+            encodedName = "imu",
             parameters = listOf(
                 SensorToggleParameter(
                     name = "Probing frequency [Hz]",
                     encodedName = "probing",
                     options = listOf(
-                        "13",
-                        "26",
-                        "52",
-                        "104",
                         "208",
-                        "416",
-                        "833",
-                        "1666"
+                        "104",
+                        "52",
+                        "26"
                     ),
                     uniqueId = 1
                 ),
-            ),
-            dataParser = {data: String -> movesenseParser(data, "acc") },
-            dataChannels = 3,
-            dataSamples = 1
-        ),
-        SensorUnit(
-            name = "Gyroscope",
-            encodedName = "gyro",
-            parameters = listOf(
-                SensorToggleParameter(
-                    name = "Probing frequency [Hz]",
-                    encodedName = "probing",
-                    options = listOf(
-                        "13",
-                        "26",
-                        "52",
-                        "104",
-                        "208",
-                        "416",
-                        "833",
-                        "1666"
-                    ),
-                    uniqueId = 2
-                ),
-            ),
-            dataParser = {data: String -> movesenseParser(data, "gyro") },
-            dataChannels = 3,
-            dataSamples = 1
-        ),
-        SensorUnit(
-            name = "Magnetometer",
-            encodedName = "mag",
-            parameters = listOf(
-                SensorToggleParameter(
-                    name = "Probing frequency [Hz]",
-                    encodedName = "probing",
-                    options = listOf(
-                        "13",
-                        "26",
-                        "52",
-                        "104",
-                        "208",
-                        "416",
-                        "833",
-                        "1666"
-                    ),
-                    uniqueId = 3
-                ),
-            ),
-            dataParser = {data: String -> movesenseParser(data, "mag") },
-            dataChannels = 3,
-            dataSamples = 1
+            )
         ),
         SensorUnit(
             name = "Heart rate",
             encodedName = "hr",
             parameters = listOf(
-            ),
-            dataParser = {data: String -> movesenseParser(data, "hr") },
-            dataChannels = 2,
-            dataSamples = 1
+            )
         )
     ),
     override val tag: TypeTag

@@ -61,7 +61,7 @@ dependencies {
     implementation 'com.airbnb.android:lottie-compose:6.1.0'
     implementation "androidx.compose.runtime:runtime-livedata:1.6.1"
     implementation "com.google.accompanist:accompanist-permissions:0.23.1"
-    implementation("com.juul.kable:core-android:0.29.0")
+    implementation("com.juul.kable:core-android:0.30.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
     implementation("androidx.core:core-splashscreen:1.0.1")

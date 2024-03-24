@@ -200,7 +200,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                     date = startDate,
                     onClickDate = { showDatePicker.value = DialogOptions.Start },
                     isDateSelected = isStartDateSelected.value,
-                    labelPrefix = "Start"
+                    label = "Start"
                 )
 
                 // End date and time
@@ -211,7 +211,7 @@ fun NewMeasurementScreen(navController: NavHostController,
                     date = endDate,
                     onClickDate = { showDatePicker.value = DialogOptions.End },
                     isDateSelected = isEndDateSelected.value,
-                    labelPrefix = "End"
+                    label = "End"
                 )
 
                 Text(
