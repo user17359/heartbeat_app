@@ -304,9 +304,13 @@ fun NewMeasurementScreen(navController: NavHostController,
                         }
                     }
                     val mTimeZone: TimeZone = TimeZone.getDefault()
-                    val mGMTOffset: Int = mTimeZone.rawOffset
-                    val startMilliseconds = startDate.selectedDateMillis!! + (startTime.hour * 60 + startTime.minute) * 60000 - mGMTOffset
-                    val endMilliseconds = endDate.selectedDateMillis!! + (endTime.hour * 60 + endTime.minute) * 60000 - mGMTOffset
+
+                    // two offsets to include case of daylight saving time change
+                    val startOffset: Int = mTimeZone.getOffset(startDate.selectedDateMillis!!)
+                    val endOffset: Int = mTimeZone.getOffset(endDate.selectedDateMillis!!)
+
+                    val startMilliseconds = startDate.selectedDateMillis!! + (startTime.hour * 60 + startTime.minute) * 60000 - startOffset
+                    val endMilliseconds = endDate.selectedDateMillis!! + (endTime.hour * 60 + endTime.minute) * 60000 - endOffset
                     coroutineScope.launch {
                         onSave(
                             navController, scanViewModel,
